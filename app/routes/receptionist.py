@@ -33,7 +33,7 @@ def receptionist_dashboard():
 @login_required
 @role_required('Receptionist')
 def register_patient():
-    return "Register Patient Placeholder"
+    return redirect(url_for('main.register_patient'))
 
 @receptionist_bp.route('/appointments')
 @login_required

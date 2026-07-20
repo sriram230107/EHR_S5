@@ -36,4 +36,4 @@ def doctor_dashboard():
 @login_required
 @role_required('Doctor')
 def search_patients():
-    return "Doctor Patient Search Placeholder"
+    return redirect(url_for('main.search_patients'))

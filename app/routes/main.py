@@ -1,17 +1,20 @@
-from flask import Blueprint, redirect, url_for
-from flask_login import current_user
+from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
+from flask_login import login_required, current_user
+from app.routes.decorators import role_required
+from app import db
+from app.models.patient import Patient
+from app.models.appointment import Appointment
+from app.models.medical_visit import MedicalVisit
+from app.models.document import Document
+from app.utils import log_action
+from datetime import datetime
 
 main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
 def index():
-    """
-    Root URL router. Redirects authenticated staff members to their respective 
-    dashboards, and unauthenticated visitors to the login screen.
-    """
     if current_user.is_authenticated:
         role_name = current_user.role.name if current_user.role else ''
-        
         if role_name == 'Hospital System Administrator':
             return redirect(url_for('admin.sysadmin_dashboard'))
         elif role_name == 'Administrator':
@@ -20,5 +23,251 @@ def index():
             return redirect(url_for('doctor.doctor_dashboard'))
         elif role_name == 'Receptionist':
             return redirect(url_for('receptionist.receptionist_dashboard'))
-            
     return redirect(url_for('auth.login'))
+
+@main_bp.route('/patients')
+@login_required
+def search_patients():
+    query_str = request.args.get('query', '').strip()
+    show_inactive = request.args.get('show_inactive', '0') == '1'
+    page = request.args.get('page', 1, type=int)
+    sort_by = request.args.get('sort_by', 'patient_number')
+    sort_order = request.args.get('sort_order', 'asc')
+    
+    # Establish role authorizations
+    role_name = current_user.role.name if current_user.role else ''
+    
+    # Restrict inactive list view to Admins and System Admins
+    can_see_inactive = role_name in ['Administrator', 'Hospital System Administrator']
+    show_deleted = show_inactive and can_see_inactive
+    
+    # Base query
+    patient_query = Patient.query
+    if not show_deleted:
+        patient_query = patient_query.filter_by(is_active=True)
+        
+    # Search filters
+    if query_str:
+        search_filter = (
+            Patient.first_name.like(f"%{query_str}%") |
+            Patient.last_name.like(f"%{query_str}%") |
+            Patient.patient_number.like(f"%{query_str}%") |
+            Patient.phone.like(f"%{query_str}%") |
+            Patient.email.like(f"%{query_str}%")
+        )
+        # Try to parse DOB if formatted as YYYY-MM-DD
+        try:
+            dob_parsed = datetime.strptime(query_str, '%Y-%m-%d').date()
+            search_filter = search_filter | (Patient.dob == dob_parsed)
+        except ValueError:
+            pass
+        patient_query = patient_query.filter(search_filter)
+        
+    # Sorting
+    if sort_by == 'first_name':
+        order_col = Patient.first_name
+    elif sort_by == 'dob':
+        order_col = Patient.dob
+    else:
+        order_col = Patient.patient_number
+        
+    if sort_order == 'desc':
+        patient_query = patient_query.order_by(order_col.desc())
+    else:
+        patient_query = patient_query.order_by(order_col.asc())
+        
+    # Pagination
+    pagination = patient_query.paginate(page=page, per_page=10, error_out=False)
+    patients = pagination.items
+    
+    return render_template(
+        'patient/search.html',
+        patients=patients,
+        pagination=pagination,
+        query=query_str,
+        show_inactive=show_deleted,
+        can_see_inactive=can_see_inactive,
+        sort_by=sort_by,
+        sort_order=sort_order
+    )
+
+@main_bp.route('/patients/register', methods=['GET', 'POST'])
+@login_required
+@role_required(['Receptionist', 'Administrator', 'Hospital System Administrator'])
+def register_patient():
+    if request.method == 'POST':
+        first_name = request.form.get('first_name', '').strip()
+        last_name = request.form.get('last_name', '').strip()
+        dob_str = request.form.get('dob', '')
+        gender = request.form.get('gender', '')
+        phone = request.form.get('phone', '').strip()
+        email = request.form.get('email', '').strip()
+        address = request.form.get('address', '').strip()
+        emergency_contact_name = request.form.get('emergency_name', '').strip()
+        emergency_contact_phone = request.form.get('emergency_phone', '').strip()
+        
+        # Validations
+        if not first_name or not last_name or not dob_str or not gender or not phone or not emergency_contact_name or not emergency_contact_phone:
+            flash("All fields marked with an asterisk (*) are required.", "danger")
+            return render_template('patient/register.html')
+            
+        try:
+            dob = datetime.strptime(dob_str, '%Y-%m-%d').date()
+        except ValueError:
+            flash("Invalid date of birth format.", "danger")
+            return render_template('patient/register.html')
+            
+        # Auto-generate Patient Number (PAT-YYYY-XXXX)
+        current_year = datetime.now().year
+        prefix = f"PAT-{current_year}-"
+        same_year_patients = Patient.query.filter(Patient.patient_number.like(f"{prefix}%")).all()
+        
+        if same_year_patients:
+            counters = []
+            for p in same_year_patients:
+                try:
+                    counter = int(p.patient_number.split('-')[-1])
+                    counters.append(counter)
+                except ValueError:
+                    pass
+            next_counter = max(counters) + 1 if counters else 1
+        else:
+            next_counter = 1
+            
+        patient_number = f"PAT-{current_year}-{str(next_counter).zfill(4)}"
+        
+        new_patient = Patient(
+            patient_number=patient_number,
+            first_name=first_name,
+            last_name=last_name,
+            dob=dob,
+            gender=gender,
+            phone=phone,
+            email=email or None,
+            address=address or None,
+            emergency_contact_name=emergency_contact_name,
+            emergency_contact_phone=emergency_contact_phone,
+            is_active=True
+        )
+        
+        db.session.add(new_patient)
+        db.session.commit()
+        
+        log_action(
+            action="Record Create",
+            details=f"Registered patient {new_patient.full_name} with MRN: {patient_number}."
+        )
+        
+        flash(f"Patient {new_patient.full_name} successfully registered. MRN: {patient_number}", "success")
+        return redirect(url_for('main.view_patient_profile', patient_id=new_patient.id))
+        
+    return render_template('patient/register.html')
+
+@main_bp.route('/patients/<int:patient_id>')
+@login_required
+def view_patient_profile(patient_id):
+    patient = Patient.query.get_or_404(patient_id)
+    role_name = current_user.role.name if current_user.role else ''
+    
+    # Hide inactive patient profile from Receptionists/Doctors
+    if not patient.is_active and role_name not in ['Administrator', 'Hospital System Administrator']:
+        abort(403, description="This patient record is currently inactive.")
+        
+    # Query appointments for the scheduling histories card
+    appointments = Appointment.query.filter_by(patient_id=patient.id).order_by(Appointment.appointment_date.desc()).all()
+    
+    # Restrict clinical history view to authorized roles (Doctor, Admin, SysAdmin)
+    has_clinical_access = role_name in ['Doctor', 'Administrator', 'Hospital System Administrator']
+    
+    if has_clinical_access:
+        # Load visits and documents
+        visits = MedicalVisit.query.filter_by(patient_id=patient.id).order_by(MedicalVisit.visit_date.desc()).all()
+        documents = Document.query.filter_by(patient_id=patient.id).order_by(Document.uploaded_at.desc()).all()
+        return render_template(
+            'patient/profile.html',
+            patient=patient,
+            appointments=appointments,
+            visits=visits,
+            documents=documents,
+            has_clinical_access=True
+        )
+    else:
+        # Receptionist access: demographic profile only
+        return render_template(
+            'patient/profile.html',
+            patient=patient,
+            appointments=appointments,
+            visits=[],
+            documents=[],
+            has_clinical_access=False
+        )
+
+@main_bp.route('/patients/<int:patient_id>/edit', methods=['GET', 'POST'])
+@login_required
+@role_required(['Receptionist', 'Administrator', 'Hospital System Administrator'])
+def edit_patient(patient_id):
+    patient = Patient.query.get_or_404(patient_id)
+    if not patient.is_active:
+        abort(403, description="Cannot edit an inactive patient record.")
+        
+    if request.method == 'POST':
+        first_name = request.form.get('first_name', '').strip()
+        last_name = request.form.get('last_name', '').strip()
+        dob_str = request.form.get('dob', '')
+        gender = request.form.get('gender', '')
+        phone = request.form.get('phone', '').strip()
+        email = request.form.get('email', '').strip()
+        address = request.form.get('address', '').strip()
+        emergency_contact_name = request.form.get('emergency_name', '').strip()
+        emergency_contact_phone = request.form.get('emergency_phone', '').strip()
+        
+        if not first_name or not last_name or not dob_str or not gender or not phone or not emergency_contact_name or not emergency_contact_phone:
+            flash("All fields marked with an asterisk (*) are required.", "danger")
+            return render_template('patient/edit.html', patient=patient)
+            
+        try:
+            dob = datetime.strptime(dob_str, '%Y-%m-%d').date()
+        except ValueError:
+            flash("Invalid date of birth format.", "danger")
+            return render_template('patient/edit.html', patient=patient)
+            
+        # Update demographics
+        patient.first_name = first_name
+        patient.last_name = last_name
+        patient.dob = dob
+        patient.gender = gender
+        patient.phone = phone
+        patient.email = email or None
+        patient.address = address or None
+        patient.emergency_contact_name = emergency_contact_name
+        patient.emergency_contact_phone = emergency_contact_phone
+        
+        db.session.commit()
+        
+        log_action(
+            action="Record Update",
+            details=f"Updated demographics details for patient {patient.full_name} ({patient.patient_number})."
+        )
+        
+        flash("Patient demographic details updated successfully.", "success")
+        return redirect(url_for('main.view_patient_profile', patient_id=patient.id))
+        
+    return render_template('patient/edit.html', patient=patient)
+
+@main_bp.route('/patients/<int:patient_id>/toggle-active', methods=['POST'])
+@login_required
+@role_required(['Administrator', 'Hospital System Administrator'])
+def toggle_patient_active(patient_id):
+    patient = Patient.query.get_or_404(patient_id)
+    new_status = not patient.is_active
+    patient.is_active = new_status
+    db.session.commit()
+    
+    status_text = "activated" if new_status else "deactivated (soft delete)"
+    log_action(
+        action="Record Update",
+        details=f"Patient {patient.full_name} ({patient.patient_number}) was {status_text}."
+    )
+    
+    flash(f"Patient {patient.full_name} has been successfully {status_text}.", "success")
+    return redirect(url_for('main.view_patient_profile', patient_id=patient.id))
