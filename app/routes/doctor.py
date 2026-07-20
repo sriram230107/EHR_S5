@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
+from flask import Blueprint, render_template, redirect, url_for, flash, request, abort, jsonify
 from flask_login import login_required, current_user
 from app.routes.decorators import role_required
 from app.models.appointment import Appointment
@@ -15,13 +15,13 @@ doctor_bp = Blueprint('doctor', __name__, url_prefix='/doctor')
 @login_required
 @role_required('Doctor')
 def doctor_dashboard():
-    # 1. Today's/Pending scheduled appointments for this doctor
+    # Today's/Pending scheduled appointments for this doctor
     appointments = Appointment.query.filter_by(
         doctor_id=current_user.id,
         status='Scheduled'
     ).order_by(Appointment.appointment_date.asc()).all()
     
-    # 2. Upcoming follow-up reminders recorded by this doctor
+    # Upcoming follow-up reminders recorded by this doctor
     pending_follow_ups = MedicalVisit.query.filter(
         MedicalVisit.doctor_id == current_user.id,
         MedicalVisit.follow_up_date >= date.today()
@@ -131,3 +131,23 @@ def create_medical_visit(patient_id):
         return redirect(url_for('main.view_patient_profile', patient_id=patient.id))
         
     return render_template('visit/create.html', patient=patient)
+
+@doctor_bp.route('/icd/search')
+@login_required
+@role_required('Doctor')
+def search_icd_codes():
+    q = request.args.get('q', '').strip()
+    if not q:
+        return jsonify([])
+        
+    results = ICDCode.query.filter(
+        ICDCode.code.like(f"%{q}%") |
+        ICDCode.description.like(f"%{q}%") |
+        ICDCode.keywords.like(f"%{q}%")
+    ).limit(10).all()
+    
+    return jsonify([{
+        'id': item.id,
+        'code': item.code,
+        'description': item.description
+    } for item in results])

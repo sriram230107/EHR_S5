@@ -277,5 +277,106 @@
             }, false)
         })
     })()
+
+    // ICD-10 Search Auto-Assist
+    document.addEventListener("DOMContentLoaded", function() {
+        const icdSearchInput = document.getElementById("icd_search_input");
+        const icdSearchBtn = document.getElementById("icd_search_btn");
+        const icdSuggestionsList = document.getElementById("icd_suggestions_list");
+        const selectedIcdDisplay = document.getElementById("selected_icd_display");
+        const selectedIcdCodeText = document.getElementById("selected_icd_code_text");
+        const selectedIcdDesc = document.getElementById("selected_icd_desc");
+        const icdCodeIdInput = document.getElementById("icd_code_id");
+        const clearIcdBtn = document.getElementById("clear_icd_btn");
+
+        function performIcdSearch() {
+            const query = icdSearchInput.value.trim();
+            if (query.length < 2) {
+                icdSuggestionsList.classList.add("d-none");
+                return;
+            }
+
+            fetch("{{ url_for('doctor.search_icd_codes') }}?q=" + encodeURIComponent(query))
+                .then(response => response.json())
+                .then(data => {
+                    icdSuggestionsList.innerHTML = "";
+                    if (data.length === 0) {
+                        const noResult = document.createElement("div");
+                        noResult.className = "list-group-item text-muted small text-center";
+                        noResult.innerText = "No matching ICD codes found";
+                        icdSuggestionsList.appendChild(noResult);
+                    } else {
+                        data.forEach(item => {
+                            const btn = document.createElement("button");
+                            btn.type = "button";
+                            btn.className = "list-group-item list-group-item-action text-start small py-2";
+                            btn.innerHTML = `<strong>${item.code}</strong> - ${item.description}`;
+                            btn.addEventListener("click", function() {
+                                selectIcdCode(item.id, item.code, item.description);
+                            });
+                            icdSuggestionsList.appendChild(btn);
+                        });
+                    }
+                    icdSuggestionsList.classList.remove("d-none");
+                })
+                .catch(err => {
+                    console.error("Error fetching ICD codes:", err);
+                });
+        }
+
+        function selectIcdCode(id, code, description) {
+            icdCodeIdInput.value = id;
+            selectedIcdCodeText.innerText = code;
+            selectedIcdDesc.innerText = description;
+            selectedIcdDisplay.classList.remove("d-none");
+            icdSuggestionsList.classList.add("d-none");
+            icdSearchInput.value = "";
+            icdSearchInput.disabled = true;
+            icdSearchBtn.disabled = true;
+        }
+
+        function clearIcdSelection() {
+            icdCodeIdInput.value = "";
+            selectedIcdDisplay.classList.add("d-none");
+            icdSearchInput.disabled = false;
+            icdSearchBtn.disabled = false;
+            icdSearchInput.focus();
+        }
+
+        if (icdSearchInput && icdSearchBtn) {
+            icdSearchBtn.addEventListener("click", performIcdSearch);
+            
+            // Trigger search as doctor types
+            let searchTimeout = null;
+            icdSearchInput.addEventListener("input", function() {
+                clearTimeout(searchTimeout);
+                const query = icdSearchInput.value.trim();
+                if (query.length >= 2) {
+                    searchTimeout = setTimeout(performIcdSearch, 300);
+                } else {
+                    icdSuggestionsList.classList.add("d-none");
+                }
+            });
+
+            // Prevent Enter key on search input from submitting the main form, perform search instead
+            icdSearchInput.addEventListener("keydown", function(e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    performIcdSearch();
+                }
+            });
+        }
+
+        if (clearIcdBtn) {
+            clearIcdBtn.addEventListener("click", clearIcdSelection);
+        }
+
+        // Close suggestions when clicking outside
+        document.addEventListener("click", function(e) {
+            if (icdSuggestionsList && !icdSuggestionsList.contains(e.target) && e.target !== icdSearchInput && e.target !== icdSearchBtn) {
+                icdSuggestionsList.classList.add("d-none");
+            }
+        });
+    });
 </script>
 {% endblock %}
