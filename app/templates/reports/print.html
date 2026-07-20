@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Report - EHR Clinical Portal</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Font (Inter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+            color: #000000;
+            padding: 2rem;
+        }
+        
+        .report-header {
+            border-bottom: 2px solid #333333;
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .table {
+            border-color: #000000 !important;
+        }
+        
+        .table th {
+            background-color: #f2f2f2 !important;
+            color: #000000 !important;
+            font-weight: 600;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Printable Header -->
+    <div class="report-header d-flex align-items-center justify-content-between">
+        <div>
+            <h2 class="fw-bold mb-1">EHR Clinical Portal</h2>
+            <h5 class="text-secondary fw-semibold mb-0">{{ report_title }}</h5>
+        </div>
+        <div class="text-end">
+            <span class="small text-muted">Generated on:</span>
+            <div class="fw-semibold">{{ timestamp }}</div>
+        </div>
+    </div>
+
+    <!-- Print Button (Only visible on screen, hidden in print copy) -->
+    <div class="no-print mb-4 d-flex justify-content-end gap-2">
+        <button onclick="window.close();" class="btn btn-sm btn-outline-secondary">Close Window</button>
+        <button onclick="window.print();" class="btn btn-sm btn-primary">Trigger Print / Save PDF</button>
+    </div>
+
+    <!-- Data Table -->
+    <table class="table table-bordered table-striped align-middle">
+        <thead>
+            <tr>
+                {% for header in headers %}
+                <th>{{ header }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% if rows %}
+                {% for row in rows %}
+                <tr>
+                    {% for cell in row %}
+                    <td>{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="{{ headers|length }}" class="text-center text-muted">No records found matching criteria.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <div class="mt-5 text-center text-muted small">
+        &copy; 2026 EHR Clinical Portal - Internal Administrative Use Only
+    </div>
+
+    <!-- Auto Print Trigger Script -->
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                window.print();
+            }, 600);
+        });
+    </script>
+</body>
+</html>

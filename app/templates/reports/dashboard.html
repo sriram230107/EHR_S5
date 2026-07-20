@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Clinical Reports Hub - EHR Portal{% endblock %}
+
+{% block page_header %}Administrative Reports & Metrics{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    <!-- Report 1: Daily Visit Frequency -->
+    <div class="col-12 col-xl-6">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-0">
+                <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-calendar3 text-primary me-2"></i>Daily Consultations Log (Last 15 Days)</h6>
+                <div class="btn-group">
+                    <a href="{{ url_for('admin.export_report_csv', report_type='daily_visits') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-file-earmark-spreadsheet me-1"></i> CSV
+                    </a>
+                    <a href="{{ url_for('admin.print_report', report_type='daily_visits') }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-printer me-1"></i> Print
+                    </a>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="font-size: 0.9rem;">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Total Visits Recorded</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if daily_visits %}
+                            {% for date_str, count in daily_visits %}
+                            <tr>
+                                <td class="fw-medium text-dark">{{ date_str }}</td>
+                                <td>
+                                    <span class="badge bg-medical-light px-3 py-2 fs-6" style="min-width: 50px;">{{ count }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="2" class="text-center py-4 text-muted">No visits recorded in database.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report 2: Doctor Workload -->
+    <div class="col-12 col-xl-6">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-0">
+                <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-person-workspace text-success me-2"></i>Doctor Workload & Productivity</h6>
+                <div class="btn-group">
+                    <a href="{{ url_for('admin.export_report_csv', report_type='doctor_workload') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-file-earmark-spreadsheet me-1"></i> CSV
+                    </a>
+                    <a href="{{ url_for('admin.print_report', report_type='doctor_workload') }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-printer me-1"></i> Print
+                    </a>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="font-size: 0.9rem;">
+                    <thead>
+                        <tr>
+                            <th>Doctor Name</th>
+                            <th>Specialization / Dept</th>
+                            <th class="text-end">Total Consultations</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if doctor_workload %}
+                            {% for fname, lname, dept, count in doctor_workload %}
+                            <tr>
+                                <td class="fw-medium text-dark">Dr. {{ fname }} {{ lname }}</td>
+                                <td>
+                                    <span class="badge bg-secondary-light text-secondary">{{ dept or 'General Medicine' }}</span>
+                                </td>
+                                <td class="text-end fw-bold text-primary">{{ count }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center py-4 text-muted">No consultations logged by doctors.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report 3: Common Diagnoses ICD-10 Distribution -->
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-0">
+                <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-graph-up text-info me-2"></i>Most Frequent ICD-10 Diagnostic Distributions</h6>
+                <div class="btn-group">
+                    <a href="{{ url_for('admin.export_report_csv', report_type='diagnoses') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-file-earmark-spreadsheet me-1"></i> CSV
+                    </a>
+                    <a href="{{ url_for('admin.print_report', report_type='diagnoses') }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-printer me-1"></i> Print
+                    </a>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="font-size: 0.9rem;">
+                    <thead>
+                        <tr>
+                            <th>ICD-10 Code</th>
+                            <th>Diagnostic Description</th>
+                            <th>Frequency Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if common_diagnoses %}
+                            {% for code, desc, count in common_diagnoses %}
+                            <tr>
+                                <td class="fw-bold"><span class="badge bg-info text-white">{{ code }}</span></td>
+                                <td class="text-dark">{{ desc }}</td>
+                                <td class="fw-semibold text-primary">{{ count }} occurrences</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center py-4 text-muted">No ICD diagnoses recorded yet.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
