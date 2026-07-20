@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Patient - EHR Portal{% endblock %}
+
+{% block page_header %}Edit Patient Demographics{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-0">
+                <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-pencil-square text-primary me-2"></i>Update Demographics: {{ patient.patient_number }}</h6>
+            </div>
+            
+            <div class="card-body">
+                <form action="{{ url_for('main.edit_patient', patient_id=patient.id) }}" method="POST" class="needs-validation" novalidate>
+                    
+                    <div class="row g-3 mb-4">
+                        <h6 class="fw-semibold text-primary border-bottom pb-2">Basic Demographics</h6>
+                        
+                        <div class="col-12 col-md-6">
+                            <label for="first_name" class="form-label">First Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" value="{{ patient.first_name }}" required>
+                            <div class="invalid-feedback">First name is required.</div>
+                        </div>
+                        
+                        <div class="col-12 col-md-6">
+                            <label for="last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" value="{{ patient.last_name }}" required>
+                            <div class="invalid-feedback">Last name is required.</div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label for="dob" class="form-label">Date of Birth <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="dob" name="dob" value="{{ patient.dob.strftime('%Y-%m-%d') }}" required>
+                            <div class="invalid-feedback">Please select a valid date of birth.</div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label for="gender" class="form-label">Gender <span class="text-danger">*</span></label>
+                            <select class="form-select" id="gender" name="gender" required>
+                                <option value="Male" {% if patient.gender == 'Male' %}selected{% endif %}>Male</option>
+                                <option value="Female" {% if patient.gender == 'Female' %}selected{% endif %}>Female</option>
+                                <option value="Other" {% if patient.gender == 'Other' %}selected{% endif %}>Other</option>
+                            </select>
+                            <div class="invalid-feedback">Gender selection is required.</div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <h6 class="fw-semibold text-primary border-bottom pb-2">Contact Details</h6>
+                        
+                        <div class="col-12 col-md-6">
+                            <label for="phone" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" id="phone" name="phone" value="{{ patient.phone }}" required>
+                            <div class="invalid-feedback">Phone number is required.</div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ patient.email or '' }}">
+                            <div class="invalid-feedback">Please enter a valid email address.</div>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="address" class="form-label">Home Address</label>
+                            <textarea class="form-control" id="address" name="address" rows="2">{{ patient.address or '' }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <h6 class="fw-semibold text-primary border-bottom pb-2">Emergency Contact Details</h6>
+                        
+                        <div class="col-12 col-md-6">
+                            <label for="emergency_name" class="form-label">Emergency Contact Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="emergency_name" name="emergency_name" value="{{ patient.emergency_contact_name }}" required>
+                            <div class="invalid-feedback">Emergency contact name is required.</div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label for="emergency_phone" class="form-label">Emergency Contact Phone <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" id="emergency_phone" name="emergency_phone" value="{{ patient.emergency_contact_phone }}" required>
+                            <div class="invalid-feedback">Emergency contact phone is required.</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                        <a href="{{ url_for('main.view_patient_profile', patient_id=patient.id) }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (() => {
+        'use strict'
+        const forms = document.querySelectorAll('.needs-validation')
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
+</script>
+{% endblock %}

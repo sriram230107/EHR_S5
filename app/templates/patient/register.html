@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Register New Patient - EHR Portal{% endblock %}
+
+{% block page_header %}Register New Patient{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-0">
+                <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-person-plus-fill text-primary me-2"></i>Patient Demographic Information</h6>
+            </div>
+            
+            <div class="card-body">
+                <form action="{{ url_for('main.register_patient') }}" method="POST" class="needs-validation" novalidate>
+                    
+                    <div class="row g-3 mb-4">
+                        <h6 class="fw-semibold text-primary border-bottom pb-2">Basic Demographics</h6>
+                        
+                        <div class="col-12 col-md-6">
+                            <label for="first_name" class="form-label">First Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" required>
+                            <div class="invalid-feedback">First name is required.</div>
+                        </div>
+                        
+                        <div class="col-12 col-md-6">
+                            <label for="last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" required>
+                            <div class="invalid-feedback">Last name is required.</div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label for="dob" class="form-label">Date of Birth <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="dob" name="dob" max="{{ datetime }}" required>
+                            <div class="invalid-feedback">Please select a valid date of birth.</div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label for="gender" class="form-label">Gender <span class="text-danger">*</span></label>
+                            <select class="form-select" id="gender" name="gender" required>
+                                <option value="" selected disabled>Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <div class="invalid-feedback">Gender selection is required.</div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <h6 class="fw-semibold text-primary border-bottom pb-2">Contact Details</h6>
+                        
+                        <div class="col-12 col-md-6">
+                            <label for="phone" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" id="phone" name="phone" placeholder="e.g. 555-0199" required>
+                            <div class="invalid-feedback">Phone number is required.</div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com">
+                            <div class="invalid-feedback">Please enter a valid email address.</div>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="address" class="form-label">Home Address</label>
+                            <textarea class="form-control" id="address" name="address" rows="2" placeholder="Street Address, City, State, ZIP"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <h6 class="fw-semibold text-primary border-bottom pb-2">Emergency Contact Details</h6>
+                        
+                        <div class="col-12 col-md-6">
+                            <label for="emergency_name" class="form-label">Emergency Contact Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="emergency_name" name="emergency_name" required>
+                            <div class="invalid-feedback">Emergency contact name is required.</div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label for="emergency_phone" class="form-label">Emergency Contact Phone <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" id="emergency_phone" name="emergency_phone" placeholder="e.g. 555-0000" required>
+                            <div class="invalid-feedback">Emergency contact phone is required.</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                        <a href="{{ url_for('main.search_patients') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i> Register Patient
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form Validation logic
+    (() => {
+        'use strict'
+        const forms = document.querySelectorAll('.needs-validation')
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
+</script>
+{% endblock %}

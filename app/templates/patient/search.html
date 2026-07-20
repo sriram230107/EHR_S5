@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Directory - EHR Portal{% endblock %}
+
+{% block page_header %}Patient Records Directory{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-12 col-md-8 mb-3 mb-md-0">
+        <!-- Embed Reusable Search Widget -->
+        {% include "patient/search_widget.html" %}
+    </div>
+    <div class="col-12 col-md-4 text-md-end">
+        {% if current_user.role.name in ['Receptionist', 'Administrator', 'Hospital System Administrator'] %}
+        <a href="{{ url_for('main.register_patient') }}" class="btn btn-primary shadow-sm">
+            <i class="bi bi-person-plus-fill me-2"></i>Register Patient
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-0">
+        <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-person-lines-fill text-primary me-2"></i>Patient List</h6>
+        
+        <!-- Toggle inactive checkbox for admins -->
+        {% if can_see_inactive %}
+        <div class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" role="switch" id="toggleInactive" {% if show_inactive %}checked{% endif %}>
+            <label class="form-check-label small text-muted fw-semibold" for="toggleInactive">Show Inactive Records</label>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>
+                        <a href="{{ url_for('main.search_patients', query=query, show_inactive=show_inactive, sort_by='patient_number', sort_order='desc' if sort_by == 'patient_number' and sort_order == 'asc' else 'asc') }}" class="text-decoration-none text-secondary">
+                            Patient ID / MRN
+                            {% if sort_by == 'patient_number' %}
+                                <i class="bi bi-arrow-{% if sort_order == 'asc' %}up{% else %}down{% endif %} small"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ url_for('main.search_patients', query=query, show_inactive=show_inactive, sort_by='first_name', sort_order='desc' if sort_by == 'first_name' and sort_order == 'asc' else 'asc') }}" class="text-decoration-none text-secondary">
+                            Name
+                            {% if sort_by == 'first_name' %}
+                                <i class="bi bi-arrow-{% if sort_order == 'asc' %}up{% else %}down{% endif %} small"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ url_for('main.search_patients', query=query, show_inactive=show_inactive, sort_by='dob', sort_order='desc' if sort_by == 'dob' and sort_order == 'asc' else 'asc') }}" class="text-decoration-none text-secondary">
+                            Age / DOB
+                            {% if sort_by == 'dob' %}
+                                <i class="bi bi-arrow-{% if sort_order == 'asc' %}up{% else %}down{% endif %} small"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>Gender</th>
+                    <th>Phone</th>
+                    {% if can_see_inactive %}
+                    <th>Status</th>
+                    {% endif %}
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if patients %}
+                    {% for p in patients %}
+                    <tr {% if not p.is_active %}class="table-light text-muted opacity-75"{% endif %}>
+                        <td class="fw-bold">
+                            {{ p.patient_number }}
+                        </td>
+                        <td>
+                            <div class="fw-semibold text-dark">{{ p.full_name }}</div>
+                            <span class="text-muted small">{{ p.email or '' }}</span>
+                        </td>
+                        <td>
+                            <div>{{ p.age }} yrs</div>
+                            <span class="text-muted small">{{ p.dob.strftime('%b %d, %Y') }}</span>
+                        </td>
+                        <td>
+                            <span class="badge rounded-pill bg-secondary-light text-secondary">{{ p.gender }}</span>
+                        </td>
+                        <td>{{ p.phone }}</td>
+                        {% if can_see_inactive %}
+                        <td>
+                            {% if p.is_active %}
+                                <span class="badge bg-success-light text-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger-light text-danger">Inactive</span>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+                        <td class="text-end">
+                            <a href="{{ url_for('main.view_patient_profile', patient_id=p.id) }}" class="btn btn-sm btn-outline-primary me-1">
+                                <i class="bi bi-eye-fill"></i> View
+                            </a>
+                            {% if p.is_active and current_user.role.name in ['Receptionist', 'Administrator', 'Hospital System Administrator'] %}
+                            <a href="{{ url_for('main.edit_patient', patient_id=p.id) }}" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-pencil-fill"></i> Edit
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="{% if can_see_inactive %}7{% else %}6{% endif %}" class="text-center py-4 text-muted">
+                            <i class="bi bi-people fs-2 mb-2 d-block"></i>
+                            No patient records found.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Pagination Controls -->
+{% if pagination and pagination.pages > 1 %}
+<nav aria-label="Patient search pagination">
+    <ul class="pagination justify-content-center">
+        <!-- Previous Page Link -->
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('main.search_patients', query=query, show_inactive='1' if show_inactive else '0', page=pagination.prev_num, sort_by=sort_by, sort_order=sort_order) }}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        
+        <!-- Page Numbers -->
+        {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+                <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('main.search_patients', query=query, show_inactive='1' if show_inactive else '0', page=page_num, sort_by=sort_by, sort_order=sort_order) }}">{{ page_num }}</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+        {% endfor %}
+        
+        <!-- Next Page Link -->
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('main.search_patients', query=query, show_inactive='1' if show_inactive else '0', page=pagination.next_num, sort_by=sort_by, sort_order=sort_order) }}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Handle Show Inactive toggle change
+    const toggleSwitch = document.getElementById('toggleInactive');
+    if (toggleSwitch) {
+        toggleSwitch.addEventListener('change', function() {
+            const url = new URL(window.location.href);
+            url.searchParams.set('show_inactive', this.checked ? '1' : '0');
+            url.searchParams.set('page', '1'); // Reset to page 1 on filter change
+            window.location.href = url.toString();
+        });
+    }
+</script>
+{% endblock %}
