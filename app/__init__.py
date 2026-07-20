@@ -40,10 +40,26 @@ def create_app(config_class='config.Config'):
     app.register_blueprint(doctor_bp)
     app.register_blueprint(receptionist_bp)
     
-    # Standard user loader callback (model will be defined in database step)
+    # Standard user loader callback
     @login_manager.user_loader
     def load_user(user_id):
         from app.models.user import User
         return User.query.get(int(user_id))
+        
+    # Custom error page registrations
+    @app.errorhandler(403)
+    def forbidden_error(error):
+        from flask import render_template
+        return render_template('errors/403.html'), 403
+
+    @app.errorhandler(404)
+    def not_found_error(error):
+        from flask import render_template
+        return render_template('errors/404.html'), 404
+
+    @app.errorhandler(500)
+    def internal_error(error):
+        from flask import render_template
+        return render_template('errors/500.html'), 500
         
     return app
