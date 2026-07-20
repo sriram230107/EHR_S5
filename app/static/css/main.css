@@ -1,0 +1,237 @@
+/* Custom styles for EHR Clinical Portal */
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f4f6f9;
+    color: #333333;
+    overflow-x: hidden;
+}
+
+/* Sidebar Styling */
+#sidebar {
+    width: 260px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    background-color: #1e293b; /* Dark slate blue */
+    color: #cbd5e1;
+    transition: all 0.3s;
+}
+
+#sidebar .sidebar-header {
+    padding: 1.25rem;
+    background-color: #0f172a; /* Deeper slate */
+    border-bottom: 1px solid #334155;
+}
+
+#sidebar .brand-title {
+    color: #ffffff;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+#sidebar .nav-link {
+    color: #94a3b8;
+    padding: 0.8rem 1.25rem;
+    font-size: 0.925rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+}
+
+#sidebar .nav-link i {
+    font-size: 1.15rem;
+    margin-right: 0.75rem;
+    transition: color 0.2s;
+}
+
+#sidebar .nav-link:hover, #sidebar .nav-link.active {
+    color: #ffffff;
+    background-color: #334155;
+    border-left-color: #0d6efd; /* Medical Blue accent */
+}
+
+#sidebar .nav-link:hover i, #sidebar .nav-link.active i {
+    color: #0d6efd;
+}
+
+/* Content Area Wrapper */
+#content-wrapper {
+    margin-left: 260px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s;
+}
+
+/* Top Navbar Styling */
+.top-navbar {
+    height: 60px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0 1.5rem;
+}
+
+.top-navbar .navbar-brand {
+    display: none; /* Only visible on mobile toggles */
+}
+
+.navbar-user-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 30px;
+    font-weight: 600;
+}
+
+/* Content Body */
+.main-content {
+    padding: 2rem 1.5rem;
+    flex: 1;
+}
+
+/* Dashboard Metric Cards */
+.metric-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+
+.metric-icon {
+    font-size: 2rem;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.bg-medical-light {
+    background-color: rgba(13, 110, 253, 0.1);
+    color: #0d6efd;
+}
+
+.bg-success-light {
+    background-color: rgba(25, 135, 84, 0.1);
+    color: #198754;
+}
+
+.bg-warning-light {
+    background-color: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+}
+
+.bg-danger-light {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+.bg-info-light {
+    background-color: rgba(13, 202, 240, 0.1);
+    color: #0dcaf0;
+}
+
+.bg-secondary-light {
+    background-color: rgba(108, 117, 125, 0.1);
+    color: #6c7175;
+}
+
+/* Tables styling */
+.table-responsive {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 0.75rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+}
+
+.table thead th {
+    border-top: none;
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    padding: 1rem 0.75rem;
+}
+
+.table tbody td {
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+    font-size: 0.9rem;
+}
+
+/* Timeline Layout */
+.timeline {
+    position: relative;
+    padding-left: 30px;
+    border-left: 2px solid #e2e8f0;
+    margin-left: 15px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -37px;
+    top: 5px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: #0d6efd;
+    border: 3px solid #ffffff;
+    box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+}
+
+.timeline-item.timeline-warning::before {
+    background-color: #ffc107;
+    box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.25);
+}
+
+/* Document Upload Area */
+.upload-dropzone {
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    background-color: #f8fafc;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.upload-dropzone:hover {
+    border-color: #0d6efd;
+}
+
+/* Responsive adjustments */
+@media (max-width: 991.98px) {
+    #sidebar {
+        margin-left: -260px;
+    }
+    
+    #sidebar.active {
+        margin-left: 0;
+    }
+    
+    #content-wrapper {
+        margin-left: 0;
+    }
+    
+    .top-navbar .navbar-brand {
+        display: block;
+    }
+}

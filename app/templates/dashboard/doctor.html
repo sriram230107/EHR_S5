@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Dashboard - EHR Portal{% endblock %}
+
+{% block page_header %}Doctor Clinical Workspace{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <!-- Today's Schedule Queue -->
+    <div class="col-12 col-xl-8">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-0">
+                <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-calendar-check-fill text-primary me-2"></i>My Scheduled Consultations</h6>
+                <span class="badge bg-primary-light text-primary">{{ appointments|length }} Scheduled</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Patient ID</th>
+                            <th>Patient Name</th>
+                            <th>Reason</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if appointments %}
+                            {% for appt in appointments %}
+                            <tr>
+                                <td class="text-nowrap small text-muted">
+                                    {{ appt.appointment_date.strftime('%I:%M %p') }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">{{ appt.patient.patient_number }}</span>
+                                </td>
+                                <td class="fw-medium text-dark">
+                                    {{ appt.patient.full_name }}
+                                </td>
+                                <td class="small text-muted text-truncate" style="max-width: 180px;">
+                                    {{ appt.reason }}
+                                </td>
+                                <td class="text-end">
+                                    <a href="{{ url_for('doctor.search_patients') }}?search={{ appt.patient.patient_number }}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-file-earmark-medical me-1"></i>Open File
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">No scheduled consultations for today.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Patient Search Widget -->
+    <div class="col-12 col-xl-4">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white py-3 border-0">
+                <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-search text-primary me-2"></i>Quick Patient Lookup</h6>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('doctor.search_patients') }}" method="GET">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" name="search" placeholder="Enter MRN, Name, or Phone..." required>
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                    <p class="text-muted small mb-0">
+                        Search active records to view medical visit timelines, diagnostic history, and uploaded lab reports.
+                    </p>
+                </form>
+            </div>
+        </div>
+
+        <!-- Metric Card -->
+        <div class="card shadow-sm border-0 bg-white">
+            <div class="card-body py-4 d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-muted fw-semibold small text-uppercase mb-1">My Department</h6>
+                    <h5 class="fw-bold text-dark mb-0">{{ current_user.department.name if current_user.department else 'N/A' }}</h5>
+                    <p class="text-muted small mb-0 mt-1">License: {{ current_user.license_number or 'N/A' }}</p>
+                </div>
+                <div class="metric-icon bg-info-light">
+                    <i class="bi bi-heart-pulse-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Pending Follow-up Reminders -->
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-0">
+                <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-clock-history text-primary me-2"></i>Pending Follow-up Reminders</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Follow-up Date</th>
+                            <th>Patient ID</th>
+                            <th>Patient Name</th>
+                            <th>Contact Phone</th>
+                            <th>Last Diagnosis</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if pending_follow_ups %}
+                            {% for visit in pending_follow_ups %}
+                            <tr>
+                                <td class="text-nowrap fw-bold text-primary">
+                                    {{ visit.follow_up_date.strftime('%b %d, %Y') }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">{{ visit.patient.patient_number }}</span>
+                                </td>
+                                <td class="fw-medium text-dark">
+                                    {{ visit.patient.full_name }}
+                                </td>
+                                <td class="small text-muted">{{ visit.patient.phone }}</td>
+                                <td class="small text-muted">
+                                    {% if visit.icd_code %}
+                                        <span class="badge bg-info text-white me-1">{{ visit.icd_code.code }}</span>
+                                        {{ visit.icd_code.description }}
+                                    {% else %}
+                                        {{ visit.diagnosis_notes | truncate(50) }}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-3">No pending patient follow-ups scheduled.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

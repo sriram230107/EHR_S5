@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - EHR Portal{% endblock %}
+
+{% block page_header %}Administrator Dashboard{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <!-- Stat Cards -->
+    <div class="col-12 col-md-4">
+        <div class="card metric-card h-100 bg-white">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-muted fw-semibold small text-uppercase mb-1">Active Patients</h6>
+                    <h3 class="fw-bold text-dark mb-0">{{ total_patients }}</h3>
+                </div>
+                <div class="metric-icon bg-medical-light">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-md-4">
+        <div class="card metric-card h-100 bg-white">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-muted fw-semibold small text-uppercase mb-1">Hospital Doctors</h6>
+                    <h3 class="fw-bold text-dark mb-0">{{ total_doctors }}</h3>
+                </div>
+                <div class="metric-icon bg-info-light">
+                    <i class="bi bi-heart-pulse-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+        <div class="card metric-card h-100 bg-white">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-muted fw-semibold small text-uppercase mb-1">Active Receptionists</h6>
+                    <h3 class="fw-bold text-dark mb-0">{{ total_receptionists }}</h3>
+                </div>
+                <div class="metric-icon bg-success-light">
+                    <i class="bi bi-person-workspace"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Quick Management links -->
+    <div class="col-12 col-lg-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3 border-0">
+                <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-gear-fill text-primary me-2"></i>Quick Actions</h6>
+            </div>
+            <div class="card-body d-flex flex-column gap-2">
+                <a href="{{ url_for('admin.manage_doctors') }}" class="btn btn-light border text-start py-2">
+                    <i class="bi bi-heart-pulse text-primary me-2"></i>Manage Doctors List
+                </a>
+                <a href="{{ url_for('admin.manage_receptionists') }}" class="btn btn-light border text-start py-2">
+                    <i class="bi bi-person-workspace text-success me-2"></i>Manage Receptionists List
+                </a>
+                <a href="{{ url_for('admin.manage_patients') }}" class="btn btn-light border text-start py-2">
+                    <i class="bi bi-people text-info me-2"></i>Manage Patients Database
+                </a>
+                <a href="{{ url_for('admin.manage_appointments') }}" class="btn btn-light border text-start py-2">
+                    <i class="bi bi-calendar-event text-warning me-2"></i>Manage All Appointments
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Appointments Queue -->
+    <div class="col-12 col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-0">
+                <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-calendar-check-fill text-primary me-2"></i>Upcoming Appointment Queue</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Patient Name</th>
+                            <th>Assigned Doctor</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if pending_appointments %}
+                            {% for appt in pending_appointments %}
+                            <tr>
+                                <td class="text-nowrap small text-muted">
+                                    {{ appt.appointment_date.strftime('%b %d, %Y - %I:%M %p') }}
+                                </td>
+                                <td class="fw-medium text-dark">
+                                    {{ appt.patient.full_name }}
+                                </td>
+                                <td>
+                                    {{ appt.doctor.full_name }}
+                                </td>
+                                <td class="small text-muted text-truncate" style="max-width: 200px;">
+                                    {{ appt.reason }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-3">No upcoming appointments scheduled.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

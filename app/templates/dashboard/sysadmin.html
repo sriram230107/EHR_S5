@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}System Admin Dashboard - EHR Portal{% endblock %}
+
+{% block page_header %}System Administrator Dashboard{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <!-- Stat Cards -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card metric-card h-100 bg-white">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-muted fw-semibold small text-uppercase mb-1">Total Patients</h6>
+                    <h3 class="fw-bold text-dark mb-0">{{ total_patients }}</h3>
+                </div>
+                <div class="metric-icon bg-medical-light">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card metric-card h-100 bg-white">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-muted fw-semibold small text-uppercase mb-1">Total Staff</h6>
+                    <h3 class="fw-bold text-dark mb-0">{{ total_users }}</h3>
+                </div>
+                <div class="metric-icon bg-success-light">
+                    <i class="bi bi-person-badge-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card metric-card h-100 bg-white">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-muted fw-semibold small text-uppercase mb-1">Active Doctors</h6>
+                    <h3 class="fw-bold text-dark mb-0">{{ total_doctors }}</h3>
+                </div>
+                <div class="metric-icon bg-info-light">
+                    <i class="bi bi-heart-pulse-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card metric-card h-100 bg-white">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-muted fw-semibold small text-uppercase mb-1">Today's Visits</h6>
+                    <h3 class="fw-bold text-dark mb-0">{{ todays_visits }}</h3>
+                </div>
+                <div class="metric-icon bg-warning-light">
+                    <i class="bi bi-hospital"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Quick Actions and Database Backup Card -->
+    <div class="col-12 col-lg-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3 border-0">
+                <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-cpu-fill text-primary me-2"></i>System Controls</h6>
+            </div>
+            <div class="card-body">
+                <div class="p-3 bg-light rounded mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-database-fill-check text-success fs-4 me-2"></i>
+                        <span class="fw-semibold">SQLite Database Backup</span>
+                    </div>
+                    <p class="text-muted small mb-3">
+                        Download a copy of the live SQLite database file. This contains all patients, visit timelines, users, and credentials.
+                    </p>
+                    <a href="{{ url_for('admin.backup_download_view') }}" class="btn btn-outline-primary w-100 btn-sm">
+                        <i class="bi bi-download me-2"></i>Backup Database
+                    </a>
+                </div>
+                
+                <div class="p-3 bg-light rounded">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-clock-history text-warning fs-4 me-2"></i>
+                        <span class="fw-semibold">Database Restore Tool</span>
+                    </div>
+                    <p class="text-muted small mb-0">
+                        <span class="badge bg-warning text-dark me-1">Future Release</span> 
+                        Database restore capabilities will be introduced as an administrative tool in a later version.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Appointments statistics -->
+    <div class="col-12 col-lg-8">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-0">
+                <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-calendar3 text-primary me-2"></i>Portal Summary</h6>
+            </div>
+            <div class="card-body d-flex flex-column justify-content-center">
+                <div class="row text-center g-3">
+                    <div class="col-6">
+                        <div class="p-3 border rounded bg-light">
+                            <h2 class="fw-bold text-primary">{{ pending_appointments }}</h2>
+                            <p class="text-muted mb-0 small">Pending Scheduled Appointments</p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 border rounded bg-light">
+                            <h2 class="fw-bold text-success">Active</h2>
+                            <p class="text-muted mb-0 small">Portal Connection Status</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Recent System Actions Audit Log -->
+    <div class="col-12 col-xl-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-0">
+                <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-journal-text text-primary me-2"></i>Recent System Activity</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Action</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_activities %}
+                            {% for log in recent_activities %}
+                            <tr>
+                                <td class="text-nowrap small text-muted">
+                                    {{ log.timestamp.strftime('%H:%M:%S (%b %d)') }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">{{ log.action }}</span>
+                                </td>
+                                <td class="small text-muted">{{ log.details }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">No activity logs recorded.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Login events -->
+    <div class="col-12 col-xl-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-0">
+                <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-key-fill text-primary me-2"></i>Recent Authentication Events</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Result</th>
+                            <th>IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_logins %}
+                            {% for log in recent_logins %}
+                            <tr>
+                                <td class="text-nowrap small text-muted">
+                                    {{ log.timestamp.strftime('%H:%M:%S (%b %d)') }}
+                                </td>
+                                <td>
+                                    <span class="badge {% if 'Success' in log.action %}bg-success-light{% else %}bg-danger-light{% endif %}">
+                                        {{ log.action }}
+                                    </span>
+                                </td>
+                                <td class="small text-muted">{{ log.ip_address }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">No logins logged yet.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

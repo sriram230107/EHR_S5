@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Receptionist Dashboard - EHR Portal{% endblock %}
+
+{% block page_header %}Receptionist Workspace{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <!-- Stat Card -->
+    <div class="col-12 col-md-4">
+        <div class="card metric-card h-100 bg-white">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-muted fw-semibold small text-uppercase mb-1">Registered Patients</h6>
+                    <h3 class="fw-bold text-dark mb-0">{{ total_patients }}</h3>
+                </div>
+                <div class="metric-icon bg-medical-light">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-md-8">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3 border-0">
+                <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-rocket-takeoff-fill text-primary me-2"></i>Quick Actions</h6>
+            </div>
+            <div class="card-body d-flex gap-3 flex-wrap">
+                <a href="{{ url_for('receptionist.register_patient') }}" class="btn btn-primary d-flex align-items-center py-2 px-3">
+                    <i class="bi bi-person-plus-fill me-2 fs-5"></i>Register New Patient
+                </a>
+                <a href="{{ url_for('receptionist.manage_appointments') }}" class="btn btn-outline-primary d-flex align-items-center py-2 px-3">
+                    <i class="bi bi-calendar-event me-2 fs-5"></i>Book Appointment
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Today's Schedule for all Doctors -->
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-0">
+                <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-clock-history text-primary me-2"></i>Today's Scheduled Consultations</h6>
+                <span class="badge bg-primary-light text-primary">{{ today_appointments|length }} consultations</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Patient ID</th>
+                            <th>Patient Name</th>
+                            <th>Assigned Doctor</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if today_appointments %}
+                            {% for appt in today_appointments %}
+                            <tr>
+                                <td class="text-nowrap small text-muted">
+                                    {{ appt.appointment_date.strftime('%I:%M %p') }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">{{ appt.patient.patient_number }}</span>
+                                </td>
+                                <td class="fw-medium text-dark">
+                                    {{ appt.patient.full_name }}
+                                </td>
+                                <td>
+                                    {{ appt.doctor.full_name }}
+                                </td>
+                                <td>
+                                    <span class="badge 
+                                        {% if appt.status == 'Scheduled' %}bg-warning-light text-warning
+                                        {% elif appt.status == 'Completed' %}bg-success-light text-success
+                                        {% elif appt.status == 'Cancelled' %}bg-danger-light text-danger
+                                        {% else %}bg-secondary-light text-secondary{% endif %}">
+                                        {{ appt.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">No appointments scheduled for today.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
