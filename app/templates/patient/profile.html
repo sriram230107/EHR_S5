@@ -224,7 +224,7 @@
                             <div class="card-body">
                                 <h6 class="fw-semibold text-dark mb-2"><i class="bi bi-cloud-upload me-2 text-primary"></i>Upload Diagnostic File</h6>
                                 <!-- Action pointing to Phase 8 document uploading -->
-                                <form action="{{ url_for('doctor.index') }}patient/{{ patient.id }}/upload" method="POST" enctype="multipart/form-data" class="row g-2 align-items-center">
+                                <form action="{{ url_for('doctor.upload_patient_document', patient_id=patient.id) }}" method="POST" enctype="multipart/form-data" class="row g-2 align-items-center">
                                     <div class="col-12 col-md-5">
                                         <input type="file" name="file" class="form-control form-control-sm" required>
                                     </div>
@@ -281,7 +281,7 @@
                                             <td class="small text-muted">{{ doc.uploaded_at.strftime('%b %d, %Y') }}</td>
                                             <td class="text-end">
                                                 <!-- Download endpoint to be structured in Phase 8 -->
-                                                <a href="{{ url_for('doctor.index') }}documents/download/{{ doc.id }}" class="btn btn-sm btn-outline-secondary" download>
+                                                <a href="{{ url_for('main.download_document', doc_id=doc.id) }}" class="btn btn-sm btn-outline-secondary" download>
                                                     <i class="bi bi-download"></i>
                                                 </a>
                                             </td>

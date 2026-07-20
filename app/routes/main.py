@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
+from flask import Blueprint, render_template, redirect, url_for, flash, request, abort, send_file
 from flask_login import login_required, current_user
 from app.routes.decorators import role_required
 from app import db
@@ -8,6 +8,7 @@ from app.models.medical_visit import MedicalVisit
 from app.models.document import Document
 from app.utils import log_action
 from datetime import datetime
+import os
 
 main_bp = Blueprint('main', __name__)
 
@@ -34,19 +35,14 @@ def search_patients():
     sort_by = request.args.get('sort_by', 'patient_number')
     sort_order = request.args.get('sort_order', 'asc')
     
-    # Establish role authorizations
     role_name = current_user.role.name if current_user.role else ''
-    
-    # Restrict inactive list view to Admins and System Admins
     can_see_inactive = role_name in ['Administrator', 'Hospital System Administrator']
     show_deleted = show_inactive and can_see_inactive
     
-    # Base query
     patient_query = Patient.query
     if not show_deleted:
         patient_query = patient_query.filter_by(is_active=True)
         
-    # Search filters
     if query_str:
         search_filter = (
             Patient.first_name.like(f"%{query_str}%") |
@@ -55,7 +51,6 @@ def search_patients():
             Patient.phone.like(f"%{query_str}%") |
             Patient.email.like(f"%{query_str}%")
         )
-        # Try to parse DOB if formatted as YYYY-MM-DD
         try:
             dob_parsed = datetime.strptime(query_str, '%Y-%m-%d').date()
             search_filter = search_filter | (Patient.dob == dob_parsed)
@@ -63,7 +58,6 @@ def search_patients():
             pass
         patient_query = patient_query.filter(search_filter)
         
-    # Sorting
     if sort_by == 'first_name':
         order_col = Patient.first_name
     elif sort_by == 'dob':
@@ -76,7 +70,6 @@ def search_patients():
     else:
         patient_query = patient_query.order_by(order_col.asc())
         
-    # Pagination
     pagination = patient_query.paginate(page=page, per_page=10, error_out=False)
     patients = pagination.items
     
@@ -106,7 +99,6 @@ def register_patient():
         emergency_contact_name = request.form.get('emergency_name', '').strip()
         emergency_contact_phone = request.form.get('emergency_phone', '').strip()
         
-        # Validations
         if not first_name or not last_name or not dob_str or not gender or not phone or not emergency_contact_name or not emergency_contact_phone:
             flash("All fields marked with an asterisk (*) are required.", "danger")
             return render_template('patient/register.html')
@@ -117,7 +109,6 @@ def register_patient():
             flash("Invalid date of birth format.", "danger")
             return render_template('patient/register.html')
             
-        # Auto-generate Patient Number (PAT-YYYY-XXXX)
         current_year = datetime.now().year
         prefix = f"PAT-{current_year}-"
         same_year_patients = Patient.query.filter(Patient.patient_number.like(f"{prefix}%")).all()
@@ -169,18 +160,13 @@ def view_patient_profile(patient_id):
     patient = Patient.query.get_or_404(patient_id)
     role_name = current_user.role.name if current_user.role else ''
     
-    # Hide inactive patient profile from Receptionists/Doctors
     if not patient.is_active and role_name not in ['Administrator', 'Hospital System Administrator']:
         abort(403, description="This patient record is currently inactive.")
         
-    # Query appointments for the scheduling histories card
     appointments = Appointment.query.filter_by(patient_id=patient.id).order_by(Appointment.appointment_date.desc()).all()
-    
-    # Restrict clinical history view to authorized roles (Doctor, Admin, SysAdmin)
     has_clinical_access = role_name in ['Doctor', 'Administrator', 'Hospital System Administrator']
     
     if has_clinical_access:
-        # Load visits and documents
         visits = MedicalVisit.query.filter_by(patient_id=patient.id).order_by(MedicalVisit.visit_date.desc()).all()
         documents = Document.query.filter_by(patient_id=patient.id).order_by(Document.uploaded_at.desc()).all()
         return render_template(
@@ -192,7 +178,6 @@ def view_patient_profile(patient_id):
             has_clinical_access=True
         )
     else:
-        # Receptionist access: demographic profile only
         return render_template(
             'patient/profile.html',
             patient=patient,
@@ -231,7 +216,6 @@ def edit_patient(patient_id):
             flash("Invalid date of birth format.", "danger")
             return render_template('patient/edit.html', patient=patient)
             
-        # Update demographics
         patient.first_name = first_name
         patient.last_name = last_name
         patient.dob = dob
@@ -271,3 +255,17 @@ def toggle_patient_active(patient_id):
     
     flash(f"Patient {patient.full_name} has been successfully {status_text}.", "success")
     return redirect(url_for('main.view_patient_profile', patient_id=patient.id))
+
+@main_bp.route('/patients/documents/download/<int:doc_id>')
+@login_required
+def download_document(doc_id):
+    role_name = current_user.role.name if current_user.role else ''
+    if role_name not in ['Doctor', 'Administrator', 'Hospital System Administrator']:
+        abort(403, description="Unauthorized document access.")
+        
+    doc = Document.query.get_or_404(doc_id)
+    if os.path.exists(doc.file_path):
+        log_action("Document Download", f"Downloaded file '{doc.original_filename}' for patient {doc.patient.patient_number}.")
+        return send_file(doc.file_path, as_attachment=True, download_name=doc.original_filename)
+        
+    abort(404, description="File not found on server.")

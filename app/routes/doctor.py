@@ -1,13 +1,16 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, abort, jsonify
+from flask import Blueprint, render_template, redirect, url_for, flash, request, abort, jsonify, current_app
 from flask_login import login_required, current_user
 from app.routes.decorators import role_required
 from app.models.appointment import Appointment
 from app.models.medical_visit import MedicalVisit, Prescription
 from app.models.patient import Patient
 from app.models.icd_code import ICDCode
+from app.models.document import Document
 from app.utils import log_action
 from app import db
 from datetime import date, datetime
+import os
+import time
 
 doctor_bp = Blueprint('doctor', __name__, url_prefix='/doctor')
 
@@ -151,3 +154,76 @@ def search_icd_codes():
         'code': item.code,
         'description': item.description
     } for item in results])
+
+@doctor_bp.route('/patient/<int:patient_id>/upload', methods=['POST'])
+@login_required
+@role_required('Doctor')
+def upload_patient_document(patient_id):
+    patient = Patient.query.get_or_404(patient_id)
+    if not patient.is_active:
+        abort(403, description="Cannot upload documents for inactive patient records.")
+        
+    if 'file' not in request.files:
+        flash("No file part in the upload request.", "danger")
+        return redirect(url_for('main.view_patient_profile', patient_id=patient.id))
+        
+    file = request.files['file']
+    file_type = request.form.get('file_type', '').strip()
+    
+    if file.filename == '':
+        flash("No file selected for upload.", "danger")
+        return redirect(url_for('main.view_patient_profile', patient_id=patient.id))
+        
+    valid_types = {'Prescription', 'Lab Report', 'Scan Report', 'X-Ray', 'Discharge Summary', 'Other'}
+    if file_type not in valid_types:
+        flash("Invalid document category selected.", "danger")
+        return redirect(url_for('main.view_patient_profile', patient_id=patient.id))
+        
+    # Validate extension
+    filename = file.filename
+    ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
+    allowed_exts = current_app.config['ALLOWED_EXTENSIONS']
+    if ext not in allowed_exts:
+        flash("Invalid file extension. Only PDF, JPG, JPEG, and PNG are allowed.", "danger")
+        return redirect(url_for('main.view_patient_profile', patient_id=patient.id))
+        
+    # Validate size (done in server-side file stream check)
+    file.seek(0, os.SEEK_END)
+    size = file.tell()
+    file.seek(0)  # Reset pointer
+    
+    max_size = current_app.config['MAX_CONTENT_LENGTH']
+    if size > max_size:
+        flash("File size exceeds the 10 MB limit.", "danger")
+        return redirect(url_for('main.view_patient_profile', patient_id=patient.id))
+        
+    # Build structured directory: uploads/patients/PAT-YYYY-XXXX/
+    patient_dir = os.path.join(current_app.config['UPLOAD_FOLDER'], patient.patient_number)
+    os.makedirs(patient_dir, exist_ok=True)
+    
+    # Save file with unique secure timestamp prefix
+    from werkzeug.utils import secure_filename
+    sec_name = secure_filename(filename)
+    unique_name = f"{int(time.time())}_{sec_name}"
+    save_path = os.path.join(patient_dir, unique_name)
+    file.save(save_path)
+    
+    # Save Document entry
+    doc_record = Document(
+        patient_id=patient.id,
+        doctor_id=current_user.id,
+        filename=unique_name,
+        original_filename=filename,
+        file_type=file_type,
+        file_path=save_path
+    )
+    db.session.add(doc_record)
+    db.session.commit()
+    
+    log_action(
+        action="Document Upload",
+        details=f"Uploaded {file_type} document '{filename}' for patient {patient.full_name} ({patient.patient_number})."
+    )
+    
+    flash("Document uploaded successfully.", "success")
+    return redirect(url_for('main.view_patient_profile', patient_id=patient.id))
