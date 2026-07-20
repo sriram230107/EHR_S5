@@ -20,7 +20,11 @@ def create_app(config_class='config.Config'):
     login_manager.login_message_category = 'warning'
     
     # Ensure necessary folders exist
-    os.makedirs(os.path.join(app.root_path, 'instance'), exist_ok=True)
+    db_uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
+    if db_uri.startswith('sqlite:///'):
+        db_path = db_uri.split('sqlite:///')[1]
+        db_dir = os.path.dirname(db_path)
+        os.makedirs(db_dir, exist_ok=True)
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     
     # Register blueprints (these will be created in future modules)
