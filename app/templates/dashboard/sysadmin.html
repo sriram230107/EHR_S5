@@ -6,61 +6,61 @@
 
 {% block content %}
 <div class="row g-4 mb-4">
-    <!-- Stat Cards -->
+    <!-- Stat Cards (Clickable navigation destinations) -->
     <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card metric-card h-100 bg-white">
-            <div class="card-body d-flex align-items-center justify-content-between">
+        <a href="{{ url_for('main.search_patients') }}" class="card metric-card h-100 bg-white text-decoration-none shadow-sm border-0">
+            <div class="card-body d-flex align-items-center justify-content-between text-dark">
                 <div>
                     <h6 class="text-muted fw-semibold small text-uppercase mb-1">Total Patients</h6>
                     <h3 class="fw-bold text-dark mb-0">{{ total_patients }}</h3>
                 </div>
-                <div class="metric-icon bg-medical-light">
+                <div class="metric-icon bg-medical-light text-primary">
                     <i class="bi bi-people-fill"></i>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
     
     <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card metric-card h-100 bg-white">
-            <div class="card-body d-flex align-items-center justify-content-between">
+        <a href="{{ url_for('admin.manage_users') }}" class="card metric-card h-100 bg-white text-decoration-none shadow-sm border-0">
+            <div class="card-body d-flex align-items-center justify-content-between text-dark">
                 <div>
                     <h6 class="text-muted fw-semibold small text-uppercase mb-1">Total Staff</h6>
                     <h3 class="fw-bold text-dark mb-0">{{ total_users }}</h3>
                 </div>
-                <div class="metric-icon bg-success-light">
+                <div class="metric-icon bg-success-light text-success">
                     <i class="bi bi-person-badge-fill"></i>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
 
     <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card metric-card h-100 bg-white">
-            <div class="card-body d-flex align-items-center justify-content-between">
+        <a href="{{ url_for('admin.manage_users', role='Doctor') }}" class="card metric-card h-100 bg-white text-decoration-none shadow-sm border-0">
+            <div class="card-body d-flex align-items-center justify-content-between text-dark">
                 <div>
                     <h6 class="text-muted fw-semibold small text-uppercase mb-1">Active Doctors</h6>
                     <h3 class="fw-bold text-dark mb-0">{{ total_doctors }}</h3>
                 </div>
-                <div class="metric-icon bg-info-light">
+                <div class="metric-icon bg-info-light text-info">
                     <i class="bi bi-heart-pulse-fill"></i>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
 
     <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card metric-card h-100 bg-white">
-            <div class="card-body d-flex align-items-center justify-content-between">
+        <a href="{{ url_for('admin.view_reports') }}" class="card metric-card h-100 bg-white text-decoration-none shadow-sm border-0">
+            <div class="card-body d-flex align-items-center justify-content-between text-dark">
                 <div>
                     <h6 class="text-muted fw-semibold small text-uppercase mb-1">Today's Visits</h6>
                     <h3 class="fw-bold text-dark mb-0">{{ todays_visits }}</h3>
                 </div>
-                <div class="metric-icon bg-warning-light">
+                <div class="metric-icon bg-warning-light text-warning">
                     <i class="bi bi-hospital"></i>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
 </div>
 
@@ -71,11 +71,11 @@
             <div class="card-header bg-white py-3 border-0">
                 <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-cpu-fill text-primary me-2"></i>System Controls</h6>
             </div>
-            <div class="card-body">
-                <div class="p-3 bg-light rounded mb-3">
+            <div class="card-body d-flex flex-column justify-content-between gap-3">
+                <div class="p-3 bg-light rounded">
                     <div class="d-flex align-items-center mb-2">
                         <i class="bi bi-database-fill-check text-success fs-4 me-2"></i>
-                        <span class="fw-semibold">SQLite Database Backup</span>
+                        <span class="fw-semibold text-dark">SQLite Database Backup</span>
                     </div>
                     <p class="text-muted small mb-3">
                         Download a copy of the live SQLite database file. This contains all patients, visit timelines, users, and credentials.
@@ -88,7 +88,7 @@
                 <div class="p-3 bg-light rounded">
                     <div class="d-flex align-items-center mb-2">
                         <i class="bi bi-clock-history text-warning fs-4 me-2"></i>
-                        <span class="fw-semibold">Database Restore Tool</span>
+                        <span class="fw-semibold text-dark">Database Restore Tool</span>
                     </div>
                     <p class="text-muted small mb-0">
                         <span class="badge bg-warning text-dark me-1">Future Release</span> 
@@ -108,13 +108,13 @@
             <div class="card-body d-flex flex-column justify-content-center">
                 <div class="row text-center g-3">
                     <div class="col-6">
-                        <div class="p-3 border rounded bg-light">
+                        <a href="{{ url_for('admin.manage_appointments') }}" class="text-decoration-none d-block p-3 border rounded bg-light hover-bg">
                             <h2 class="fw-bold text-primary">{{ pending_appointments }}</h2>
                             <p class="text-muted mb-0 small">Pending Scheduled Appointments</p>
-                        </div>
+                        </a>
                     </div>
                     <div class="col-6">
-                        <div class="p-3 border rounded bg-light">
+                        <div class="p-3 border rounded bg-light text-decoration-none d-block">
                             <h2 class="fw-bold text-success">Active</h2>
                             <p class="text-muted mb-0 small">Portal Connection Status</p>
                         </div>
@@ -129,8 +129,11 @@
     <!-- Recent System Actions Audit Log -->
     <div class="col-12 col-xl-6">
         <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3 border-0">
+            <div class="card-header bg-white py-3 border-0 d-flex align-items-center justify-content-between">
                 <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-journal-text text-primary me-2"></i>Recent System Activity</h6>
+                <a href="{{ url_for('admin.view_audit_logs') }}" class="btn btn-sm btn-outline-primary py-1 px-2 text-decoration-none">
+                    <i class="bi bi-eye"></i> View All
+                </a>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
@@ -168,8 +171,11 @@
     <!-- Recent Login events -->
     <div class="col-12 col-xl-6">
         <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3 border-0">
+            <div class="card-header bg-white py-3 border-0 d-flex align-items-center justify-content-between">
                 <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-key-fill text-primary me-2"></i>Recent Authentication Events</h6>
+                <a href="{{ url_for('admin.view_audit_logs') }}?q=Login" class="btn btn-sm btn-outline-primary py-1 px-2 text-decoration-none">
+                    <i class="bi bi-eye"></i> View Logins
+                </a>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
@@ -188,7 +194,7 @@
                                     {{ log.timestamp.strftime('%H:%M:%S (%b %d)') }}
                                 </td>
                                 <td>
-                                    <span class="badge {% if 'Success' in log.action %}bg-success-light{% else %}bg-danger-light{% endif %}">
+                                    <span class="badge {% if 'Success' in log.action %}bg-success-light text-success{% else %}bg-danger-light text-danger{% endif %}">
                                         {{ log.action }}
                                     </span>
                                 </td>

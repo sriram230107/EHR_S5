@@ -5,8 +5,32 @@
 {% block page_header %}Patient Medical Folder{% endblock %}
 
 {% block content %}
+<!-- Breadcrumbs -->
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0 py-1">
+        {% if current_user.role.name == 'Doctor' %}
+            <li class="breadcrumb-item"><a href="{{ url_for('doctor.doctor_dashboard') }}">Dashboard</a></li>
+        {% elif current_user.role.name == 'Receptionist' %}
+            <li class="breadcrumb-item"><a href="{{ url_for('receptionist.receptionist_dashboard') }}">Dashboard</a></li>
+        {% else %}
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.sysadmin_dashboard') if current_user.role.name == 'Hospital System Administrator' else url_for('admin.admin_dashboard') }}">Dashboard</a></li>
+        {% endif %}
+        <li class="breadcrumb-item"><a href="{{ url_for('main.search_patients') }}">Patients</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ patient.full_name }}</li>
+    </ol>
+</nav>
+
+<!-- Return to Search results if query exists -->
+{% if request.args.get('search_query') %}
+<div class="mb-3">
+    <a href="{{ url_for('main.search_patients', query=request.args.get('search_query'), page=request.args.get('page', 1), show_inactive=request.args.get('show_inactive', '0'), sort_by=request.args.get('sort_by', 'patient_number'), sort_order=request.args.get('sort_order', 'asc')) }}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Back to Search Results
+    </a>
+</div>
+{% endif %}
+
 <div class="row g-4">
-    <!-- Left Column: Patient Demographic Card (All authorized roles can see) -->
+    <!-- Left Column: Patient Demographic Card -->
     <div class="col-12 col-lg-4">
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-0">
@@ -68,6 +92,9 @@
                     <a href="{{ url_for('main.edit_patient', patient_id=patient.id) }}" class="btn btn-outline-secondary btn-sm">
                         <i class="bi bi-pencil-fill me-1"></i> Edit Demographics
                     </a>
+                    <a href="{{ url_for('main.manage_appointments', patient_id=patient.id) }}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-calendar-plus me-1"></i> Schedule Appointment
+                    </a>
                     {% endif %}
                     
                     {% if current_user.role.name in ['Administrator', 'Hospital System Administrator'] %}
@@ -93,17 +120,27 @@
                     <ul class="nav nav-tabs card-header-tabs" id="clinicalTab" role="tablist">
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active fw-semibold" id="visits-tab" data-bs-toggle="tab" data-bs-target="#visits" type="button" role="tab" aria-controls="visits" aria-selected="true">
-                                <i class="bi bi-clock-history me-1"></i> Medical History
+                                <i class="bi bi-clock-history me-1"></i> Medical Timeline
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-semibold" id="prescriptions-tab" data-bs-toggle="tab" data-bs-target="#prescriptions" type="button" role="tab" aria-controls="prescriptions" aria-selected="false">
+                                <i class="bi bi-capsule me-1"></i> Prescriptions
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link fw-semibold" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents" type="button" role="tab" aria-controls="documents" aria-selected="false">
-                                <i class="bi bi-folder-symlink me-1"></i> Medical Documents
+                                <i class="bi bi-folder-symlink me-1"></i> Documents
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link fw-semibold" id="appointments-tab" data-bs-toggle="tab" data-bs-target="#appointments" type="button" role="tab" aria-controls="appointments" aria-selected="false">
                                 <i class="bi bi-calendar3 me-1"></i> Appointments
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-semibold" id="care-team-tab" data-bs-toggle="tab" data-bs-target="#care-team" type="button" role="tab" aria-controls="care-team" aria-selected="false">
+                                <i class="bi bi-people me-1"></i> Doctors & Follow-ups
                             </button>
                         </li>
                     </ul>
@@ -116,7 +153,6 @@
                         <div class="d-flex align-items-center justify-content-between mb-4">
                             <h6 class="fw-bold text-secondary mb-0">Visit History Timeline</h6>
                             {% if current_user.role.name == 'Doctor' and patient.is_active %}
-                            <!-- Link pointing to record creation in Phase 6 -->
                             <a href="{{ url_for('doctor.create_medical_visit', patient_id=patient.id) }}" class="btn btn-primary btn-sm shadow-sm">
                                 <i class="bi bi-plus-lg me-1"></i> Record Medical Visit
                             </a>
@@ -212,7 +248,51 @@
                         {% endif %}
                     </div>
                     
-                    <!-- Tab 2: Medical Documents (Upload & Viewing) -->
+                    <!-- Tab 2: Prescriptions Compiled ledger -->
+                    <div class="tab-pane fade" id="prescriptions" role="tabpanel" aria-labelledby="prescriptions-tab">
+                        <h6 class="fw-bold text-secondary mb-3">All Prescribed Medications</h6>
+                        <div class="table-responsive shadow-none border">
+                            <table class="table table-hover align-middle mb-0" style="font-size: 0.9rem;">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Medication</th>
+                                        <th>Dosage</th>
+                                        <th>Frequency</th>
+                                        <th>Duration</th>
+                                        <th>Instructions</th>
+                                        <th>Prescribed By</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% set ns = namespace(has_pres=false) %}
+                                    {% for visit in visits %}
+                                        {% if visit.prescriptions %}
+                                            {% for pres in visit.prescriptions %}
+                                                {% set ns.has_pres = true %}
+                                                <tr>
+                                                    <td class="small text-muted">{{ visit.visit_date.strftime('%b %d, %Y') }}</td>
+                                                    <td class="fw-bold text-dark">{{ pres.medication_name }}</td>
+                                                    <td>{{ pres.dosage }}</td>
+                                                    <td>{{ pres.frequency }}</td>
+                                                    <td>{{ pres.duration }}</td>
+                                                    <td class="small text-muted">{{ pres.instructions or '-' }}</td>
+                                                    <td>{{ visit.doctor.full_name }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if not ns.has_pres %}
+                                        <tr>
+                                            <td colspan="7" class="text-center py-4 text-muted">No prescriptions recorded for this patient.</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab 3: Medical Documents -->
                     <div class="tab-pane fade" id="documents" role="tabpanel" aria-labelledby="documents-tab">
                         <div class="d-flex align-items-center justify-content-between mb-4">
                             <h6 class="fw-bold text-secondary mb-0">Patient File Drawer</h6>
@@ -223,7 +303,6 @@
                         <div class="card border-primary-light bg-light-subtle mb-4">
                             <div class="card-body">
                                 <h6 class="fw-semibold text-dark mb-2"><i class="bi bi-cloud-upload me-2 text-primary"></i>Upload Diagnostic File</h6>
-                                <!-- Action pointing to Phase 8 document uploading -->
                                 <form action="{{ url_for('doctor.upload_patient_document', patient_id=patient.id) }}" method="POST" enctype="multipart/form-data" class="row g-2 align-items-center">
                                     <div class="col-12 col-md-5">
                                         <input type="file" name="file" class="form-control form-control-sm" required>
@@ -280,7 +359,6 @@
                                             <td>{{ doc.doctor.full_name }}</td>
                                             <td class="small text-muted">{{ doc.uploaded_at.strftime('%b %d, %Y') }}</td>
                                             <td class="text-end">
-                                                <!-- Download endpoint to be structured in Phase 8 -->
                                                 <a href="{{ url_for('main.download_document', doc_id=doc.id) }}" class="btn btn-sm btn-outline-secondary" download>
                                                     <i class="bi bi-download"></i>
                                                 </a>
@@ -298,7 +376,7 @@
                         {% endif %}
                     </div>
 
-                    <!-- Tab 3: Appointments history -->
+                    <!-- Tab 4: Appointments history -->
                     <div class="tab-pane fade" id="appointments" role="tabpanel" aria-labelledby="appointments-tab">
                         <h6 class="fw-bold text-secondary mb-3">Appointments Ledger</h6>
                         {% if appointments %}
@@ -340,6 +418,63 @@
                             </div>
                         {% endif %}
                     </div>
+                    
+                    <!-- Tab 5: Doctors seen & Follow-ups -->
+                    <div class="tab-pane fade" id="care-team" role="tabpanel" aria-labelledby="care-team-tab">
+                        <div class="row g-4">
+                            <!-- Care Providers List -->
+                            <div class="col-12 col-md-6">
+                                <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-people-fill text-primary me-2"></i>Consulted Care Providers</h6>
+                                <div class="list-group">
+                                    {% set docs_seen = [] %}
+                                    {% for visit in visits %}
+                                        {% if visit.doctor.id not in docs_seen %}
+                                            {% set _ = docs_seen.append(visit.doctor.id) %}
+                                            <div class="list-group-item d-flex align-items-center justify-content-between py-3">
+                                                <div>
+                                                    <div class="fw-bold text-dark">{{ visit.doctor.full_name }}</div>
+                                                    <span class="small text-muted">{{ visit.doctor.department.name if visit.doctor.department else 'General Medicine' }}</span>
+                                                </div>
+                                                <span class="badge bg-primary-light text-primary">Consultant</span>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if not docs_seen %}
+                                        <div class="list-group-item text-muted text-center py-3">No consulting doctors recorded.</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Future Follow-up Schedule -->
+                            <div class="col-12 col-md-6">
+                                <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-clock-history text-warning me-2"></i>Upcoming Follow-up Reminders</h6>
+                                <div class="list-group">
+                                    {% set ns_follow = namespace(count=0) %}
+                                    {% for visit in visits %}
+                                        {% if visit.follow_up_date and visit.follow_up_date >= date.today() %}
+                                            {% set ns_follow.count = ns_follow.count + 1 %}
+                                            <div class="list-group-item">
+                                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                                    <span class="fw-bold text-primary">{{ visit.follow_up_date.strftime('%B %d, %Y') }}</span>
+                                                    <span class="badge bg-warning-light text-warning">Pending</span>
+                                                </div>
+                                                <div class="small text-muted">
+                                                    <strong>Doctor:</strong> {{ visit.doctor.full_name }}<br>
+                                                    <strong>Diagnosis:</strong> {{ visit.diagnosis_notes | truncate(60) }}
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if ns_follow.count == 0 %}
+                                        <div class="list-group-item text-muted text-center py-3">No future follow-ups scheduled.</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                 </div>
             </div>
         {% else %}

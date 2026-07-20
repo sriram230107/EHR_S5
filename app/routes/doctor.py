@@ -123,6 +123,18 @@ def create_medical_visit(patient_id):
                 )
                 db.session.add(pres)
                 
+        # Auto-complete today's scheduled appointment for this patient and doctor
+        today_start = datetime.combine(date.today(), datetime.min.time())
+        today_end = datetime.combine(date.today(), datetime.max.time())
+        appt = Appointment.query.filter(
+            Appointment.patient_id == patient.id,
+            Appointment.doctor_id == current_user.id,
+            Appointment.status == 'Scheduled',
+            Appointment.appointment_date.between(today_start, today_end)
+        ).first()
+        if appt:
+            appt.status = 'Completed'
+
         db.session.commit()
         
         log_action(

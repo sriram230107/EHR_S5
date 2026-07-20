@@ -6,47 +6,47 @@
 
 {% block content %}
 <div class="row g-4 mb-4">
-    <!-- Stat Cards -->
+    <!-- Stat Cards (Clickable navigation destinations) -->
     <div class="col-12 col-md-4">
-        <div class="card metric-card h-100 bg-white">
-            <div class="card-body d-flex align-items-center justify-content-between">
+        <a href="{{ url_for('admin.manage_patients') }}" class="card metric-card h-100 bg-white text-decoration-none shadow-sm border-0">
+            <div class="card-body d-flex align-items-center justify-content-between text-dark">
                 <div>
                     <h6 class="text-muted fw-semibold small text-uppercase mb-1">Active Patients</h6>
                     <h3 class="fw-bold text-dark mb-0">{{ total_patients }}</h3>
                 </div>
-                <div class="metric-icon bg-medical-light">
+                <div class="metric-icon bg-medical-light text-primary">
                     <i class="bi bi-people-fill"></i>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
     
     <div class="col-12 col-md-4">
-        <div class="card metric-card h-100 bg-white">
-            <div class="card-body d-flex align-items-center justify-content-between">
+        <a href="{{ url_for('admin.manage_doctors') }}" class="card metric-card h-100 bg-white text-decoration-none shadow-sm border-0">
+            <div class="card-body d-flex align-items-center justify-content-between text-dark">
                 <div>
                     <h6 class="text-muted fw-semibold small text-uppercase mb-1">Hospital Doctors</h6>
                     <h3 class="fw-bold text-dark mb-0">{{ total_doctors }}</h3>
                 </div>
-                <div class="metric-icon bg-info-light">
+                <div class="metric-icon bg-info-light text-info">
                     <i class="bi bi-heart-pulse-fill"></i>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
 
     <div class="col-12 col-md-4">
-        <div class="card metric-card h-100 bg-white">
-            <div class="card-body d-flex align-items-center justify-content-between">
+        <a href="{{ url_for('admin.manage_receptionists') }}" class="card metric-card h-100 bg-white text-decoration-none shadow-sm border-0">
+            <div class="card-body d-flex align-items-center justify-content-between text-dark">
                 <div>
                     <h6 class="text-muted fw-semibold small text-uppercase mb-1">Active Receptionists</h6>
                     <h3 class="fw-bold text-dark mb-0">{{ total_receptionists }}</h3>
                 </div>
-                <div class="metric-icon bg-success-light">
+                <div class="metric-icon bg-success-light text-success">
                     <i class="bi bi-person-workspace"></i>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
 </div>
 
@@ -77,8 +77,11 @@
     <!-- Upcoming Appointments Queue -->
     <div class="col-12 col-lg-8">
         <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3 border-0">
+            <div class="card-header bg-white py-3 border-0 d-flex align-items-center justify-content-between">
                 <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-calendar-check-fill text-primary me-2"></i>Upcoming Appointment Queue</h6>
+                <a href="{{ url_for('admin.manage_appointments') }}" class="btn btn-sm btn-outline-primary py-1 px-2 text-decoration-none">
+                    <i class="bi bi-calendar3"></i> Full Ledger
+                </a>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
@@ -97,11 +100,14 @@
                                 <td class="text-nowrap small text-muted">
                                     {{ appt.appointment_date.strftime('%b %d, %Y - %I:%M %p') }}
                                 </td>
-                                <td class="fw-medium text-dark">
-                                    {{ appt.patient.full_name }}
+                                <td>
+                                    <!-- Dynamic link direct to profile -->
+                                    <a href="{{ url_for('main.view_patient_profile', patient_id=appt.patient.id) }}" class="text-decoration-none fw-semibold text-dark">{{ appt.patient.full_name }}</a>
+                                    <span class="small text-muted d-block">{{ appt.patient.patient_number }}</span>
                                 </td>
                                 <td>
-                                    {{ appt.doctor.full_name }}
+                                    <!-- Dynamic link direct to staff details -->
+                                    <a href="{{ url_for('admin.edit_user', user_id=appt.doctor.id) }}" class="text-decoration-none fw-medium text-primary">Dr. {{ appt.doctor.first_name }} {{ appt.doctor.last_name }}</a>
                                 </td>
                                 <td class="small text-muted text-truncate" style="max-width: 200px;">
                                     {{ appt.reason }}

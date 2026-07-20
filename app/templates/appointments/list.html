@@ -5,6 +5,20 @@
 {% block page_header %}Clinical Appointments Schedule{% endblock %}
 
 {% block content %}
+<!-- Breadcrumbs -->
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0 py-1">
+        {% if current_user.role.name == 'Doctor' %}
+            <li class="breadcrumb-item"><a href="{{ url_for('doctor.doctor_dashboard') }}">Dashboard</a></li>
+        {% elif current_user.role.name == 'Receptionist' %}
+            <li class="breadcrumb-item"><a href="{{ url_for('receptionist.receptionist_dashboard') }}">Dashboard</a></li>
+        {% else %}
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.sysadmin_dashboard') if current_user.role.name == 'Hospital System Administrator' else url_for('admin.admin_dashboard') }}">Dashboard</a></li>
+        {% endif %}
+        <li class="breadcrumb-item active" aria-current="page">Appointments</li>
+    </ol>
+</nav>
+
 <div class="row g-4">
     
     <!-- Left Column: Book Appointment Form -->
@@ -16,13 +30,17 @@
             <div class="card-body">
                 <form action="{{ url_for('main.manage_appointments') }}" method="POST" class="needs-validation" novalidate>
                     
+                    {% if selected_patient_id %}
+                    <input type="hidden" name="return_to_profile" value="1">
+                    {% endif %}
+
                     <!-- Patient Select -->
                     <div class="mb-3">
                         <label for="patient_id" class="form-label">Select Patient <span class="text-danger">*</span></label>
                         <select class="form-select" id="patient_id" name="patient_id" required>
-                            <option value="" selected disabled>Select Active Patient</option>
+                            <option value="" {% if not selected_patient_id %}selected{% endif %} disabled>Select Active Patient</option>
                             {% for p in patients %}
-                            <option value="{{ p.id }}">{{ p.full_name }} ({{ p.patient_number }})</option>
+                            <option value="{{ p.id }}" {% if selected_patient_id and p.id == selected_patient_id %}selected{% endif %}>{{ p.full_name }} ({{ p.patient_number }})</option>
                             {% endfor %}
                         </select>
                         <div class="invalid-feedback">Patient selection is required.</div>
@@ -88,8 +106,8 @@
                     <thead>
                         <tr>
                             <th>Schedule</th>
-                            <th>Patient details</th>
-                            <th>Doctor details</th>
+                            <th>Patient Name</th>
+                            <th>Doctor Name</th>
                             <th>Status</th>
                             <th class="text-end">Update Status</th>
                         </tr>
@@ -103,8 +121,9 @@
                                     {{ appt.appointment_date.strftime('%I:%M %p') }}
                                 </td>
                                 <td>
-                                    <div class="fw-semibold text-dark">{{ appt.patient.full_name }}</div>
-                                    <span class="small text-muted">{{ appt.patient.patient_number }}</span>
+                                    <!-- Context-aware link directly to patient profile -->
+                                    <a href="{{ url_for('main.view_patient_profile', patient_id=appt.patient_id) }}" class="text-decoration-none fw-semibold text-dark">{{ appt.patient.full_name }}</a>
+                                    <span class="small text-muted d-block">{{ appt.patient.patient_number }}</span>
                                 </td>
                                 <td>
                                     <div class="fw-semibold text-dark">{{ appt.doctor.full_name }}</div>

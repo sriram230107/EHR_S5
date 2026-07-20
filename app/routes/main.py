@@ -9,7 +9,7 @@ from app.models.role import Role
 from app.models.document import Document
 from app.models.medical_visit import MedicalVisit
 from app.utils import log_action
-from datetime import datetime
+from datetime import datetime, date
 import os
 
 main_bp = Blueprint('main', __name__)
@@ -177,7 +177,8 @@ def view_patient_profile(patient_id):
             appointments=appointments,
             visits=visits,
             documents=documents,
-            has_clinical_access=True
+            has_clinical_access=True,
+            date=date
         )
     else:
         return render_template(
@@ -186,7 +187,8 @@ def view_patient_profile(patient_id):
             appointments=appointments,
             visits=[],
             documents=[],
-            has_clinical_access=False
+            has_clinical_access=False,
+            date=date
         )
 
 @main_bp.route('/patients/<int:patient_id>/edit', methods=['GET', 'POST'])
@@ -281,6 +283,7 @@ def manage_appointments():
         doctor_id_str = request.form.get('doctor_id', '')
         appt_date_str = request.form.get('appointment_date', '')
         reason = request.form.get('reason', '').strip()
+        return_to_profile = request.form.get('return_to_profile') == '1'
         
         if not patient_id_str or not doctor_id_str or not appt_date_str:
             flash("All fields are required to schedule an appointment.", "danger")
@@ -331,10 +334,14 @@ def manage_appointments():
             details=f"Scheduled appointment for patient {patient.full_name} ({patient.patient_number}) with {doctor.full_name} on {appt_date.strftime('%Y-%m-%d %H:%M')}."
         )
         flash("Appointment scheduled successfully.", "success")
+        
+        if return_to_profile:
+            return redirect(url_for('main.view_patient_profile', patient_id=patient_id))
         return redirect(url_for('main.manage_appointments'))
         
     page = request.args.get('page', 1, type=int)
     q = request.args.get('q', '').strip()
+    selected_patient_id = request.args.get('patient_id', type=int)
     
     appt_query = Appointment.query
     if q:
@@ -358,7 +365,8 @@ def manage_appointments():
         pagination=pagination,
         patients=patients,
         doctors=doctors,
-        q=q
+        q=q,
+        selected_patient_id=selected_patient_id
     )
 
 @main_bp.route('/appointments/<int:appt_id>/status', methods=['POST'])
