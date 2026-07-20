@@ -117,7 +117,7 @@
                             <h6 class="fw-bold text-secondary mb-0">Visit History Timeline</h6>
                             {% if current_user.role.name == 'Doctor' and patient.is_active %}
                             <!-- Link pointing to record creation in Phase 6 -->
-                            <a href="{{ url_for('doctor.index') }}visit/create/{{ patient.id }}" class="btn btn-primary btn-sm shadow-sm">
+                            <a href="{{ url_for('doctor.create_medical_visit', patient_id=patient.id) }}" class="btn btn-primary btn-sm shadow-sm">
                                 <i class="bi bi-plus-lg me-1"></i> Record Medical Visit
                             </a>
                             {% endif %}
