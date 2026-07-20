@@ -286,10 +286,19 @@ def manage_appointments():
             flash("All fields are required to schedule an appointment.", "danger")
             return redirect(url_for('main.manage_appointments'))
             
+        appt_date = None
+        # Try parsing without seconds first
         try:
             appt_date = datetime.strptime(appt_date_str, '%Y-%m-%dT%H:%M')
         except ValueError:
-            flash("Invalid date and time format.", "danger")
+            # Try parsing with seconds
+            try:
+                appt_date = datetime.strptime(appt_date_str, '%Y-%m-%dT%H:%M:%S')
+            except ValueError:
+                pass
+                
+        if not appt_date:
+            flash("Invalid date and time format. Please choose a valid consultation time.", "danger")
             return redirect(url_for('main.manage_appointments'))
             
         patient_id = int(patient_id_str)
