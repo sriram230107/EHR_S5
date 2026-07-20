@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}System Audit Logs - EHR Portal{% endblock %}
+
+{% block page_header %}System Auditable Actions Ledger{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-12 col-md-8">
+        <!-- Reusable log search component -->
+        <form method="GET" action="{{ url_for('admin.view_audit_logs') }}" class="w-100">
+            <div class="input-group shadow-sm">
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" name="q" class="form-control border-start-0 ps-0" placeholder="Search by action, details, username, or IP address..." value="{{ q }}">
+                <button class="btn btn-primary px-4 fw-medium" type="submit">Filter Logs</button>
+            </div>
+        </form>
+    </div>
+    <div class="col-12 col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{{ url_for('admin.sysadmin_dashboard') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-chevron-left me-1"></i> Return Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3 border-0 border-bottom">
+        <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-journal-text text-primary me-2"></i>Security Ledger History</h6>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" style="font-size: 0.9rem;">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>User Account</th>
+                    <th>Audit Action</th>
+                    <th>Encounter Details</th>
+                    <th>IP Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if logs %}
+                    {% for log in logs %}
+                    <tr>
+                        <td class="text-nowrap small text-muted">
+                            {{ log.timestamp.strftime('%Y-%m-%d - %I:%M:%S %p') }}
+                        </td>
+                        <td>
+                            {% if log.user %}
+                                <span class="fw-semibold text-dark">{{ log.user.username }}</span>
+                                <span class="small text-muted d-block">ID: {{ log.user_id }}</span>
+                            {% elif log.username_attempted %}
+                                <span class="fw-semibold text-danger">anonymous (attempted: {{ log.username_attempted }})</span>
+                            {% else %}
+                                <span class="text-muted small">system</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {% if 'Success' in log.action or 'Create' in log.action %}bg-success-light text-success
+                                {% elif 'Failed' in log.action or 'Delete' in log.action %}bg-danger-light text-danger
+                                {% elif 'Update' in log.action %}bg-warning-light text-warning
+                                {% else %}bg-secondary-light text-secondary{% endif %}">
+                                {{ log.action }}
+                            </span>
+                        </td>
+                        <td class="small text-muted" style="max-width: 320px;">
+                            {{ log.details }}
+                        </td>
+                        <td class="text-nowrap text-muted small">
+                            {{ log.ip_address }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">No security log entries found.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Pagination Controls -->
+{% if pagination and pagination.pages > 1 %}
+<nav aria-label="Audit log pagination" class="mt-4">
+    <ul class="pagination justify-content-center">
+        <!-- Previous Link -->
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('admin.view_audit_logs', q=q, page=pagination.prev_num) }}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        
+        <!-- Numbers -->
+        {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+                <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('admin.view_audit_logs', q=q, page=page_num) }}">{{ page_num }}</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+        {% endfor %}
+        
+        <!-- Next Link -->
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('admin.view_audit_logs', q=q, page=pagination.next_num) }}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

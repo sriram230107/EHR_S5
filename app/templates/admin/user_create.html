@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Create User - EHR Portal{% endblock %}
+
+{% block page_header %}Create Staff Account{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-xl-9">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-0">
+                <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-person-plus-fill text-primary me-2"></i>Account & Demographics details</h6>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('admin.create_user') }}" method="POST" class="needs-validation" novalidate>
+                    
+                    <div class="row g-3 mb-4">
+                        <h6 class="fw-semibold text-primary border-bottom pb-2">Credentials</h6>
+                        
+                        <div class="col-12 col-md-4">
+                            <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="username" name="username" placeholder="e.g. jsmith" required>
+                            <div class="invalid-feedback">Username is required.</div>
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <label for="password" class="form-label">Temporary Password <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" id="password" name="password" minlength="6" placeholder="Min. 6 characters" required>
+                            <div class="invalid-feedback">Provide a temporary password (min. 6 chars).</div>
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <label for="role_id" class="form-label">User Role <span class="text-danger">*</span></label>
+                            <select class="form-select" id="role_id" name="role_id" required>
+                                <option value="" selected disabled>Select Role</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}">{{ role.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">Please select a role.</div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <h6 class="fw-semibold text-primary border-bottom pb-2">Personal Details</h6>
+                        
+                        <div class="col-12 col-md-6">
+                            <label for="first_name" class="form-label">First Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" required>
+                            <div class="invalid-feedback">First name is required.</div>
+                        </div>
+                        
+                        <div class="col-12 col-md-6">
+                            <label for="last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" required>
+                            <div class="invalid-feedback">Last name is required.</div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="name@hospital.com" required>
+                            <div class="invalid-feedback">Please provide a valid email.</div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" placeholder="e.g. 555-1234">
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Doctor Specific Fields Panel -->
+                    <div id="doctor_fields_panel" class="p-3 bg-light rounded border mb-4 d-none">
+                        <h6 class="fw-semibold text-primary mb-3"><i class="bi bi-heart-pulse-fill me-2"></i>Doctor Professional details</h6>
+                        <div class="row g-3">
+                            <div class="col-12 col-md-4">
+                                <label for="license_number" class="form-label">Medical License Number <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="license_number" name="license_number" placeholder="e.g. LIC-GM-1001">
+                                <div class="invalid-feedback">License number is required for doctors.</div>
+                            </div>
+                            
+                            <div class="col-12 col-md-4">
+                                <label for="department_id" class="form-label">Assigned Specialty Department <span class="text-danger">*</span></label>
+                                <select class="form-select" id="department_id" name="department_id">
+                                    <option value="" selected disabled>Select Department</option>
+                                    {% for dept in departments %}
+                                    <option value="{{ dept.id }}">{{ dept.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">Please select a specialty department.</div>
+                            </div>
+
+                            <div class="col-12 col-md-4">
+                                <label for="specialization" class="form-label">Focus Specialization</label>
+                                <input type="text" class="form-control" id="specialization" name="specialization" placeholder="e.g. Pediatrics">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                        <a href="{{ url_for('admin.manage_users') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i> Create Account
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form Validation logic
+    (() => {
+        'use strict'
+        const forms = document.querySelectorAll('.needs-validation')
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
+
+    // Dynamic Doctor Panel Toggle logic
+    document.addEventListener("DOMContentLoaded", function() {
+        const roleSelect = document.getElementById("role_id");
+        const docPanel = document.getElementById("doctor_fields_panel");
+        const licenseInput = document.getElementById("license_number");
+        const deptSelect = document.getElementById("department_id");
+        
+        function handleRoleChange() {
+            const selectedText = roleSelect.options[roleSelect.selectedIndex].text;
+            
+            if (selectedText === "Doctor") {
+                docPanel.classList.remove("d-none");
+                licenseInput.required = true;
+                deptSelect.required = true;
+            } else {
+                docPanel.classList.add("d-none");
+                licenseInput.required = false;
+                deptSelect.required = false;
+                
+                // Clear fields
+                licenseInput.value = "";
+                deptSelect.value = "";
+                document.getElementById("specialization").value = "";
+            }
+        }
+        
+        if (roleSelect) {
+            roleSelect.addEventListener("change", handleRoleChange);
+        }
+    });
+</script>
+{% endblock %}

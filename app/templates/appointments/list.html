@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Appointments - EHR Portal{% endblock %}
+
+{% block page_header %}Clinical Appointments Schedule{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    
+    <!-- Left Column: Book Appointment Form -->
+    <div class="col-12 col-lg-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-0 border-bottom">
+                <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-calendar-plus text-primary me-2"></i>Schedule Consultation</h6>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('main.manage_appointments') }}" method="POST" class="needs-validation" novalidate>
+                    
+                    <!-- Patient Select -->
+                    <div class="mb-3">
+                        <label for="patient_id" class="form-label">Select Patient <span class="text-danger">*</span></label>
+                        <select class="form-select" id="patient_id" name="patient_id" required>
+                            <option value="" selected disabled>Select Active Patient</option>
+                            {% for p in patients %}
+                            <option value="{{ p.id }}">{{ p.full_name }} ({{ p.patient_number }})</option>
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">Patient selection is required.</div>
+                    </div>
+                    
+                    <!-- Doctor Select -->
+                    <div class="mb-3">
+                        <label for="doctor_id" class="form-label">Select Doctor <span class="text-danger">*</span></label>
+                        <select class="form-select" id="doctor_id" name="doctor_id" required>
+                            <option value="" selected disabled>Select Available Doctor</option>
+                            {% for d in doctors %}
+                            <option value="{{ d.id }}">{{ d.full_name }} ({{ d.department.name if d.department else 'N/A' }})</option>
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">Doctor selection is required.</div>
+                    </div>
+
+                    <!-- Date & Time Picker -->
+                    <div class="mb-3">
+                        <label for="appointment_date" class="form-label">Consultation Date & Time <span class="text-danger">*</span></label>
+                        <input type="datetime-local" class="form-control" id="appointment_date" name="appointment_date" required>
+                        <div class="invalid-feedback">Please specify a schedule date & time.</div>
+                    </div>
+
+                    <!-- Reason -->
+                    <div class="mb-4">
+                        <label for="reason" class="form-label">Reason for Visit</label>
+                        <textarea class="form-control" id="reason" name="reason" rows="3" placeholder="Symptoms, routine test, specialist refer, etc."></textarea>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-calendar-check me-2"></i>Schedule Appointment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Appointment Schedule Ledger -->
+    <div class="col-12 col-lg-8">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white py-3 border-0 border-bottom">
+                <div class="row align-items-center">
+                    <div class="col-12 col-md-6 mb-2 mb-md-0">
+                        <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-calendar3-event text-primary me-2"></i>Scheduled Appointments</h6>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <!-- Search form by patient -->
+                        <form method="GET" action="{{ url_for('main.manage_appointments') }}">
+                            <div class="input-group input-group-sm">
+                                <input type="text" name="q" class="form-control" placeholder="Search by name or ID..." value="{{ q }}">
+                                <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="font-size: 0.9rem;">
+                    <thead>
+                        <tr>
+                            <th>Schedule</th>
+                            <th>Patient details</th>
+                            <th>Doctor details</th>
+                            <th>Status</th>
+                            <th class="text-end">Update Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if appointments %}
+                            {% for appt in appointments %}
+                            <tr>
+                                <td class="text-nowrap small text-muted">
+                                    <div class="fw-semibold text-dark">{{ appt.appointment_date.strftime('%b %d, %Y') }}</div>
+                                    {{ appt.appointment_date.strftime('%I:%M %p') }}
+                                </td>
+                                <td>
+                                    <div class="fw-semibold text-dark">{{ appt.patient.full_name }}</div>
+                                    <span class="small text-muted">{{ appt.patient.patient_number }}</span>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold text-dark">{{ appt.doctor.full_name }}</div>
+                                    <span class="small text-muted">{{ appt.doctor.department.name if appt.doctor.department else 'N/A' }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge 
+                                        {% if appt.status == 'Scheduled' %}bg-warning-light text-warning
+                                        {% elif appt.status == 'Completed' %}bg-success-light text-success
+                                        {% elif appt.status == 'Cancelled' %}bg-danger-light text-danger
+                                        {% else %}bg-secondary-light text-secondary{% endif %}">
+                                        {{ appt.status }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    {% if appt.status == 'Scheduled' %}
+                                    <div class="d-inline-flex gap-1">
+                                        <!-- Complete action -->
+                                        <form action="{{ url_for('main.update_appointment_status', appt_id=appt.id) }}" method="POST">
+                                            <input type="hidden" name="status" value="Completed">
+                                            <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2" title="Mark Completed">
+                                                <i class="bi bi-check-lg"></i>
+                                            </button>
+                                        </form>
+                                        <!-- Cancel action -->
+                                        <form action="{{ url_for('main.update_appointment_status', appt_id=appt.id) }}" method="POST">
+                                            <input type="hidden" name="status" value="Cancelled">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Cancel Appointment">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </form>
+                                        <!-- No-Show action -->
+                                        <form action="{{ url_for('main.update_appointment_status', appt_id=appt.id) }}" method="POST">
+                                            <input type="hidden" name="status" value="No-Show">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary py-1 px-2" title="Mark No-Show">
+                                                <i class="bi bi-exclamation-triangle"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    {% else %}
+                                    <span class="text-muted small">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">No appointments registered.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination Controls -->
+        {% if pagination and pagination.pages > 1 %}
+        <nav aria-label="Appointment pagination" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('main.manage_appointments', q=q, page=pagination.prev_num) }}">&laquo;</a>
+                </li>
+                {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if page_num %}
+                        <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('main.manage_appointments', q=q, page=page_num) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('main.manage_appointments', q=q, page=pagination.next_num) }}">&raquo;</a>
+                </li>
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (() => {
+        'use strict'
+        const forms = document.querySelectorAll('.needs-validation')
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
+</script>
+{% endblock %}

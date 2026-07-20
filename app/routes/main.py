@@ -4,8 +4,10 @@ from app.routes.decorators import role_required
 from app import db
 from app.models.patient import Patient
 from app.models.appointment import Appointment
-from app.models.medical_visit import MedicalVisit
+from app.models.user import User
+from app.models.role import Role
 from app.models.document import Document
+from app.models.medical_visit import MedicalVisit
 from app.utils import log_action
 from datetime import datetime
 import os
@@ -269,3 +271,105 @@ def download_document(doc_id):
         return send_file(doc.file_path, as_attachment=True, download_name=doc.original_filename)
         
     abort(404, description="File not found on server.")
+
+@main_bp.route('/appointments', methods=['GET', 'POST'])
+@login_required
+@role_required(['Receptionist', 'Administrator', 'Hospital System Administrator'])
+def manage_appointments():
+    if request.method == 'POST':
+        patient_id_str = request.form.get('patient_id', '')
+        doctor_id_str = request.form.get('doctor_id', '')
+        appt_date_str = request.form.get('appointment_date', '')
+        reason = request.form.get('reason', '').strip()
+        
+        if not patient_id_str or not doctor_id_str or not appt_date_str:
+            flash("All fields are required to schedule an appointment.", "danger")
+            return redirect(url_for('main.manage_appointments'))
+            
+        try:
+            appt_date = datetime.strptime(appt_date_str, '%Y-%m-%dT%H:%M')
+        except ValueError:
+            flash("Invalid date and time format.", "danger")
+            return redirect(url_for('main.manage_appointments'))
+            
+        patient_id = int(patient_id_str)
+        doctor_id = int(doctor_id_str)
+        
+        # Verify doctor is active
+        doctor = User.query.get(doctor_id)
+        if not doctor or not doctor.is_active or doctor.role.name != 'Doctor':
+            flash("Invalid doctor selected.", "danger")
+            return redirect(url_for('main.manage_appointments'))
+            
+        # Verify patient is active
+        patient = Patient.query.get(patient_id)
+        if not patient or not patient.is_active:
+            flash("Invalid patient selected.", "danger")
+            return redirect(url_for('main.manage_appointments'))
+            
+        appt = Appointment(
+            patient_id=patient_id,
+            doctor_id=doctor_id,
+            appointment_date=appt_date,
+            status='Scheduled',
+            reason=reason
+        )
+        db.session.add(appt)
+        db.session.commit()
+        
+        log_action(
+            action="Appointment Create",
+            details=f"Scheduled appointment for patient {patient.full_name} ({patient.patient_number}) with {doctor.full_name} on {appt_date.strftime('%Y-%m-%d %H:%M')}."
+        )
+        flash("Appointment scheduled successfully.", "success")
+        return redirect(url_for('main.manage_appointments'))
+        
+    page = request.args.get('page', 1, type=int)
+    q = request.args.get('q', '').strip()
+    
+    appt_query = Appointment.query
+    if q:
+        appt_query = appt_query.join(Patient).filter(
+            Patient.first_name.like(f"%{q}%") | 
+            Patient.last_name.like(f"%{q}%") | 
+            Patient.patient_number.like(f"%{q}%")
+        )
+        
+    pagination = appt_query.order_by(Appointment.appointment_date.desc()).paginate(page=page, per_page=10, error_out=False)
+    appointments = pagination.items
+    
+    # Load patient and doctor dropdown lists
+    patients = Patient.query.filter_by(is_active=True).order_by(Patient.first_name.asc()).all()
+    doctor_role = Role.query.filter_by(name='Doctor').first()
+    doctors = User.query.filter_by(role_id=doctor_role.id, is_active=True).order_by(User.first_name.asc()).all() if doctor_role else []
+    
+    return render_template(
+        'appointments/list.html',
+        appointments=appointments,
+        pagination=pagination,
+        patients=patients,
+        doctors=doctors,
+        q=q
+    )
+
+@main_bp.route('/appointments/<int:appt_id>/status', methods=['POST'])
+@login_required
+@role_required(['Receptionist', 'Administrator', 'Hospital System Administrator'])
+def update_appointment_status(appt_id):
+    appt = Appointment.query.get_or_404(appt_id)
+    status = request.form.get('status', '').strip()
+    
+    if status in ['Scheduled', 'Completed', 'Cancelled', 'No-Show']:
+        old_status = appt.status
+        appt.status = status
+        db.session.commit()
+        
+        log_action(
+            action="Appointment Update",
+            details=f"Updated appointment ID {appt.id} status for patient {appt.patient.full_name} from '{old_status}' to '{status}'."
+        )
+        flash(f"Appointment status updated to '{status}'.", "success")
+    else:
+        flash("Invalid status code.", "danger")
+        
+    return redirect(request.referrer or url_for('main.manage_appointments'))
