@@ -1,0 +1,1618 @@
+﻿
+  app\models\appointment.py:3:
+  app\models\appointment.py:4:class Appointment(db.Model):
+  app\models\appointment.py:5:    __tablename__ = 'appointments'
+  app\models\appointment.py:6:    
+  app\models\appointment.py:7:    id = db.Column(db.Integer, primary_key=True)
+> app\models\appointment.py:8:    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), 
+nullable=False)
+  app\models\appointment.py:9:    doctor_id = db.Column(db.Integer, db.ForeignKey('users.id'), 
+nullable=False)  # role must be Doctor
+  app\models\appointment.py:10:    appointment_date = db.Column(db.DateTime, nullable=False)
+  app\models\appointment.py:11:    status = db.Column(db.String(20), default='Scheduled', nullable=False)  # 
+'Scheduled', 'Completed', 'Cancelled', 'No-Show'
+  app\models\appointment.py:12:    reason = db.Column(db.Text)
+  app\models\appointment.py:13:    created_at = db.Column(db.DateTime, default=datetime.utcnow, 
+nullable=False)
+  app\models\appointment.py:14:    updated_at = db.Column(db.DateTime, default=datetime.utcnow, 
+onupdate=datetime.utcnow, nullable=False)
+  app\models\appointment.py:15:
+  app\models\appointment.py:16:    def __repr__(self):
+  app\models\appointment.py:17:        return f"<Appointment {self.id} on {self.appointment_date}>"
+  app\models\document.py:3:
+  app\models\document.py:4:class Document(db.Model):
+  app\models\document.py:5:    __tablename__ = 'documents'
+  app\models\document.py:6:    
+  app\models\document.py:7:    id = db.Column(db.Integer, primary_key=True)
+> app\models\document.py:8:    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), 
+nullable=False)
+  app\models\document.py:9:    doctor_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+  app\models\document.py:10:    filename = db.Column(db.String(255), nullable=False)
+  app\models\document.py:11:    original_filename = db.Column(db.String(255), nullable=False)
+  app\models\document.py:12:    
+  app\models\document.py:13:    # Predefined category restriction (validated at application level):
+  app\models\document.py:14:    # 'Prescription', 'Lab Report', 'Scan Report', 'X-Ray', 'Discharge Summary', 
+'Other'
+  app\models\document.py:15:    file_type = db.Column(db.String(50), nullable=False)
+  app\models\document.py:16:    
+  app\models\document.py:17:    file_path = db.Column(db.String(255), nullable=False)
+  app\models\document.py:18:    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+  app\models\document.py:19:
+  app\models\document.py:20:    def __repr__(self):
+> app\models\document.py:21:        return f"<Document {self.id} - {self.file_type} for Patient 
+{self.patient_id}>"
+  app\models\medical_visit.py:3:
+  app\models\medical_visit.py:4:class MedicalVisit(db.Model):
+  app\models\medical_visit.py:5:    __tablename__ = 'medical_visits'
+  app\models\medical_visit.py:6:    
+  app\models\medical_visit.py:7:    id = db.Column(db.Integer, primary_key=True)
+> app\models\medical_visit.py:8:    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), 
+nullable=False)
+  app\models\medical_visit.py:9:    doctor_id = db.Column(db.Integer, db.ForeignKey('users.id'), 
+nullable=False)  # User FK
+  app\models\medical_visit.py:10:    visit_date = db.Column(db.DateTime, default=datetime.utcnow, 
+nullable=False)
+  app\models\medical_visit.py:11:    symptoms = db.Column(db.Text, nullable=False)
+  app\models\medical_visit.py:12:    
+  app\models\medical_visit.py:13:    # Vitals
+  app\models\medical_visit.py:14:    vitals_bp = db.Column(db.String(20), nullable=False)  # e.g., "120/80"
+  app\models\medical_visit.py:15:    vitals_pulse = db.Column(db.Integer, nullable=False)  # bpm
+  app\models\medical_visit.py:16:    vitals_temp = db.Column(db.Float, nullable=False)      # °C or °F
+  app\models\medical_visit.py:17:    vitals_weight = db.Column(db.Float, nullable=False)    # kg
+  app\models\medical_visit.py:18:    
+  app\models\medical_visit.py:19:    # ICD Code linkage
+  app\models\medical_visit.py:20:    icd_code_id = db.Column(db.Integer, db.ForeignKey('icd_codes.id'), 
+nullable=True)
+  app\models\medical_visit.py:29:    
+  app\models\medical_visit.py:30:    # Relationships
+  app\models\medical_visit.py:31:    prescriptions = db.relationship('Prescription', backref='medical_visit', 
+lazy=True, cascade="all, delete-orphan")
+  app\models\medical_visit.py:32:
+  app\models\medical_visit.py:33:    def __repr__(self):
+> app\models\medical_visit.py:34:        return f"<MedicalVisit {self.id} for Patient {self.patient_id}>"
+  app\models\medical_visit.py:35:
+  app\models\medical_visit.py:36:
+  app\models\medical_visit.py:37:class Prescription(db.Model):
+  app\models\medical_visit.py:38:    __tablename__ = 'prescriptions'
+  app\models\medical_visit.py:39:    
+  app\models\medical_visit.py:40:    id = db.Column(db.Integer, primary_key=True)
+  app\models\medical_visit.py:41:    visit_id = db.Column(db.Integer, db.ForeignKey('medical_visits.id'), 
+nullable=False)
+  app\models\medical_visit.py:42:    medication_name = db.Column(db.String(100), nullable=False)
+  app\models\medical_visit.py:43:    dosage = db.Column(db.String(50), nullable=False)  # e.g., "500 mg"
+  app\models\medical_visit.py:44:    frequency = db.Column(db.String(50), nullable=False)  # e.g., "Twice a 
+day"
+  app\models\medical_visit.py:45:    duration = db.Column(db.String(50), nullable=False)  # e.g., "5 days"
+  app\models\medical_visit.py:46:    instructions = db.Column(db.Text)
+  app\routes\admin.py:66:    )
+  app\routes\admin.py:67:
+  app\routes\admin.py:68:@admin_bp.route('/backup/download')
+  app\routes\admin.py:69:@login_required
+  app\routes\admin.py:70:@role_required('Hospital System Administrator')
+> app\routes\admin.py:71:def backup_download_view():
+  app\routes\admin.py:72:    db_uri = current_app.config.get('SQLALCHEMY_DATABASE_URI', '')
+  app\routes\admin.py:73:    if db_uri.startswith('sqlite:///'):
+  app\routes\admin.py:74:        db_path = db_uri.split('sqlite:///')[1]
+  app\routes\admin.py:75:        if os.path.exists(db_path):
+  app\routes\admin.py:76:            log_action("DB Backup Download", f"Hospital System Administrator 
+downloaded database backup.")
+  app\routes\admin.py:77:            return send_file(
+  app\routes\admin.py:78:                db_path, 
+  app\routes\admin.py:79:                as_attachment=True, 
+  app\routes\admin.py:80:                
+download_name=f"ehr_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
+  app\routes\admin.py:81:            )
+  app\routes\admin.py:82:            
+  app\routes\admin.py:83:    flash("Database backup failed. SQLite DB file not found.", "danger")
+  app\routes\admin.py:84:    return redirect(url_for('admin.sysadmin_dashboard'))
+  app\routes\admin.py:85:
+  app\routes\admin.py:86:@admin_bp.route('/reports')
+  app\routes\admin.py:87:@login_required
+  app\routes\admin.py:88:@role_required(['Administrator', 'Hospital System Administrator'])
+> app\routes\admin.py:89:def view_reports():
+  app\routes\admin.py:90:    daily_visits = db.session.query(
+  app\routes\admin.py:91:        db.func.strftime('%Y-%m-%d', MedicalVisit.visit_date).label('v_date'),
+  app\routes\admin.py:92:        db.func.count(MedicalVisit.id)
+  app\routes\admin.py:93:    ).group_by('v_date').order_by(db.desc('v_date')).limit(15).all()
+  app\routes\admin.py:94:    
+  app\routes\admin.py:95:    common_diagnoses = db.session.query(
+  app\routes\admin.py:96:        ICDCode.code,
+  app\routes\admin.py:97:        ICDCode.description,
+  app\routes\admin.py:98:        db.func.count(MedicalVisit.id).label('visit_cnt')
+  app\routes\admin.py:99:    
+).join(MedicalVisit).group_by(ICDCode.id).order_by(db.desc('visit_cnt')).limit(10).all()
+  app\routes\admin.py:100:    
+  app\routes\admin.py:101:    doctor_workload = db.session.query(
+  app\routes\admin.py:226:    role_filter = request.args.get('role', '').strip()
+  app\routes\admin.py:227:    role_name = current_user.role.name
+  app\routes\admin.py:228:    
+  app\routes\admin.py:229:    user_query = User.query
+  app\routes\admin.py:230:    
+> app\routes\admin.py:231:    # RBAC restriction: Administrators can only view Doctors and Receptionists
+  app\routes\admin.py:232:    if role_name == 'Administrator':
+  app\routes\admin.py:233:        doctor_role = Role.query.filter_by(name='Doctor').first()
+  app\routes\admin.py:234:        rec_role = Role.query.filter_by(name='Receptionist').first()
+  app\routes\admin.py:235:        allowed_role_ids = [r.id for r in [doctor_role, rec_role] if r]
+  app\routes\admin.py:236:        user_query = user_query.filter(User.role_id.in_(allowed_role_ids))
+  app\routes\admin.py:237:        
+  app\routes\admin.py:238:    if role_filter:
+  app\routes\admin.py:239:        target_role = Role.query.filter_by(name=role_filter).first()
+  app\routes\admin.py:240:        if target_role:
+  app\routes\admin.py:241:            user_query = user_query.filter_by(role_id=target_role.id)
+  app\routes\admin.py:242:            
+  app\routes\admin.py:243:    users = user_query.order_by(User.username.asc()).all()
+  app\routes\admin.py:429:    return redirect(url_for('admin.manage_users'))
+  app\routes\admin.py:430:
+  app\routes\admin.py:431:@admin_bp.route('/audit-logs')
+  app\routes\admin.py:432:@login_required
+  app\routes\admin.py:433:@role_required('Hospital System Administrator')
+> app\routes\admin.py:434:def view_audit_logs():
+  app\routes\admin.py:435:    q = request.args.get('q', '').strip()
+  app\routes\admin.py:436:    page = request.args.get('page', 1, type=int)
+  app\routes\admin.py:437:    
+  app\routes\admin.py:438:    logs_query = AuditLog.query
+  app\routes\admin.py:439:    if q:
+  app\routes\admin.py:440:        logs_query = logs_query.outerjoin(User).filter(
+  app\routes\admin.py:441:            AuditLog.action.like(f"%{q}%") |
+  app\routes\admin.py:442:            AuditLog.details.like(f"%{q}%") |
+  app\routes\admin.py:443:            AuditLog.ip_address.like(f"%{q}%") |
+  app\routes\admin.py:444:            AuditLog.username_attempted.like(f"%{q}%") |
+  app\routes\admin.py:445:            User.username.like(f"%{q}%")
+  app\routes\admin.py:446:        )
+  app\routes\admin.py:464:
+  app\routes\admin.py:465:@admin_bp.route('/patients')
+  app\routes\admin.py:466:@login_required
+  app\routes\admin.py:467:@role_required(['Administrator', 'Hospital System Administrator'])
+  app\routes\admin.py:468:def manage_patients():
+> app\routes\admin.py:469:    return redirect(url_for('main.search_patients'))
+  app\routes\admin.py:470:
+  app\routes\admin.py:471:@admin_bp.route('/appointments')
+  app\routes\admin.py:472:@login_required
+  app\routes\admin.py:473:@role_required(['Administrator', 'Hospital System Administrator'])
+  app\routes\admin.py:474:def manage_appointments():
+  app\routes\admin.py:475:    return redirect(url_for('main.manage_appointments'))
+  app\routes\doctor.py:37:    )
+  app\routes\doctor.py:38:
+  app\routes\doctor.py:39:@doctor_bp.route('/patients')
+  app\routes\doctor.py:40:@login_required
+  app\routes\doctor.py:41:@role_required('Doctor')
+> app\routes\doctor.py:42:def search_patients():
+> app\routes\doctor.py:43:    return redirect(url_for('main.search_patients'))
+  app\routes\doctor.py:44:
+> app\routes\doctor.py:45:@doctor_bp.route('/visit/create/<int:patient_id>', methods=['GET', 'POST'])
+  app\routes\doctor.py:46:@login_required
+  app\routes\doctor.py:47:@role_required('Doctor')
+> app\routes\doctor.py:48:def create_medical_visit(patient_id):
+> app\routes\doctor.py:49:    patient = Patient.query.get_or_404(patient_id)
+  app\routes\doctor.py:50:    if not patient.is_active:
+  app\routes\doctor.py:51:        abort(403, description="Cannot record medical visits for inactive patient 
+records.")
+  app\routes\doctor.py:52:        
+  app\routes\doctor.py:53:    if request.method == 'POST':
+  app\routes\doctor.py:54:        symptoms = request.form.get('symptoms', '').strip()
+  app\routes\doctor.py:55:        vitals_bp = request.form.get('vitals_bp', '').strip()
+  app\routes\doctor.py:56:        vitals_pulse_str = request.form.get('vitals_pulse', '').strip()
+  app\routes\doctor.py:57:        vitals_temp_str = request.form.get('vitals_temp', '').strip()
+  app\routes\doctor.py:58:        vitals_weight_str = request.form.get('vitals_weight', '').strip()
+  app\routes\doctor.py:59:        
+  app\routes\doctor.py:60:        icd_code_id_str = request.form.get('icd_code_id', '').strip()
+  app\routes\doctor.py:61:        diagnosis_notes = request.form.get('diagnosis_notes', '').strip()
+  app\routes\doctor.py:85:                flash("Invalid follow-up date format.", "danger")
+  app\routes\doctor.py:86:                return render_template('visit/create.html', patient=patient)
+  app\routes\doctor.py:87:                
+  app\routes\doctor.py:88:        # Initialize Visit Transaction
+  app\routes\doctor.py:89:        visit = MedicalVisit(
+> app\routes\doctor.py:90:            patient_id=patient.id,
+  app\routes\doctor.py:91:            doctor_id=current_user.id,
+  app\routes\doctor.py:92:            symptoms=symptoms,
+  app\routes\doctor.py:93:            vitals_bp=vitals_bp,
+  app\routes\doctor.py:94:            vitals_pulse=vitals_pulse,
+  app\routes\doctor.py:95:            vitals_temp=vitals_temp,
+  app\routes\doctor.py:96:            vitals_weight=vitals_weight,
+  app\routes\doctor.py:97:            icd_code_id=icd_code_id,
+  app\routes\doctor.py:98:            diagnosis_notes=diagnosis_notes,
+  app\routes\doctor.py:99:            clinical_notes=clinical_notes or None,
+  app\routes\doctor.py:100:            follow_up_date=follow_up_date
+  app\routes\doctor.py:101:        )
+  app\routes\doctor.py:102:        
+  app\routes\doctor.py:125:                
+  app\routes\doctor.py:126:        # Auto-complete today's scheduled appointment for this patient and doctor
+  app\routes\doctor.py:127:        today_start = datetime.combine(date.today(), datetime.min.time())
+  app\routes\doctor.py:128:        today_end = datetime.combine(date.today(), datetime.max.time())
+  app\routes\doctor.py:129:        appt = Appointment.query.filter(
+> app\routes\doctor.py:130:            Appointment.patient_id == patient.id,
+  app\routes\doctor.py:131:            Appointment.doctor_id == current_user.id,
+  app\routes\doctor.py:132:            Appointment.status == 'Scheduled',
+  app\routes\doctor.py:133:            Appointment.appointment_date.between(today_start, today_end)
+  app\routes\doctor.py:134:        ).first()
+  app\routes\doctor.py:135:        if appt:
+  app\routes\doctor.py:136:            appt.status = 'Completed'
+  app\routes\doctor.py:137:
+  app\routes\doctor.py:138:        db.session.commit()
+  app\routes\doctor.py:139:        
+  app\routes\doctor.py:140:        log_action(
+  app\routes\doctor.py:141:            action="Record Create",
+  app\routes\doctor.py:142:            details=f"Recorded new Medical Visit (ID: {visit.id}) for patient 
+{patient.full_name} ({patient.patient_number})."
+  app\routes\doctor.py:143:        )
+  app\routes\doctor.py:144:        
+  app\routes\doctor.py:145:        flash("Medical visit and prescriptions saved successfully.", "success")
+> app\routes\doctor.py:146:        return redirect(url_for('main.view_patient_profile', 
+patient_id=patient.id))
+  app\routes\doctor.py:147:        
+  app\routes\doctor.py:148:    return render_template('visit/create.html', patient=patient)
+  app\routes\doctor.py:149:
+  app\routes\doctor.py:150:@doctor_bp.route('/icd/search')
+  app\routes\doctor.py:151:@login_required
+  app\routes\doctor.py:152:@role_required('Doctor')
+  app\routes\doctor.py:153:def search_icd_codes():
+  app\routes\doctor.py:154:    q = request.args.get('q', '').strip()
+  app\routes\doctor.py:155:    if not q:
+  app\routes\doctor.py:156:        return jsonify([])
+  app\routes\doctor.py:157:        
+  app\routes\doctor.py:158:    results = ICDCode.query.filter(
+  app\routes\doctor.py:165:        'id': item.id,
+  app\routes\doctor.py:166:        'code': item.code,
+  app\routes\doctor.py:167:        'description': item.description
+  app\routes\doctor.py:168:    } for item in results])
+  app\routes\doctor.py:169:
+> app\routes\doctor.py:170:@doctor_bp.route('/patient/<int:patient_id>/upload', methods=['POST'])
+  app\routes\doctor.py:171:@login_required
+  app\routes\doctor.py:172:@role_required('Doctor')
+> app\routes\doctor.py:173:def upload_patient_document(patient_id):
+> app\routes\doctor.py:174:    patient = Patient.query.get_or_404(patient_id)
+  app\routes\doctor.py:175:    if not patient.is_active:
+  app\routes\doctor.py:176:        abort(403, description="Cannot upload documents for inactive patient 
+records.")
+  app\routes\doctor.py:177:        
+  app\routes\doctor.py:178:    if 'file' not in request.files:
+  app\routes\doctor.py:179:        flash("No file part in the upload request.", "danger")
+> app\routes\doctor.py:180:        return redirect(url_for('main.view_patient_profile', 
+patient_id=patient.id))
+  app\routes\doctor.py:181:        
+  app\routes\doctor.py:182:    file = request.files['file']
+  app\routes\doctor.py:183:    file_type = request.form.get('file_type', '').strip()
+  app\routes\doctor.py:184:    
+  app\routes\doctor.py:185:    if file.filename == '':
+  app\routes\doctor.py:186:        flash("No file selected for upload.", "danger")
+> app\routes\doctor.py:187:        return redirect(url_for('main.view_patient_profile', 
+patient_id=patient.id))
+  app\routes\doctor.py:188:        
+  app\routes\doctor.py:189:    valid_types = {'Prescription', 'Lab Report', 'Scan Report', 'X-Ray', 
+'Discharge Summary', 'Other'}
+  app\routes\doctor.py:190:    if file_type not in valid_types:
+  app\routes\doctor.py:191:        flash("Invalid document category selected.", "danger")
+> app\routes\doctor.py:192:        return redirect(url_for('main.view_patient_profile', 
+patient_id=patient.id))
+  app\routes\doctor.py:193:        
+  app\routes\doctor.py:194:    # Validate extension
+  app\routes\doctor.py:195:    filename = file.filename
+  app\routes\doctor.py:196:    ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
+  app\routes\doctor.py:197:    allowed_exts = current_app.config['ALLOWED_EXTENSIONS']
+  app\routes\doctor.py:198:    if ext not in allowed_exts:
+  app\routes\doctor.py:199:        flash("Invalid file extension. Only PDF, JPG, JPEG, and PNG are allowed.", 
+"danger")
+> app\routes\doctor.py:200:        return redirect(url_for('main.view_patient_profile', 
+patient_id=patient.id))
+  app\routes\doctor.py:201:        
+  app\routes\doctor.py:202:    # Validate size (done in server-side file stream check)
+  app\routes\doctor.py:203:    file.seek(0, os.SEEK_END)
+  app\routes\doctor.py:204:    size = file.tell()
+  app\routes\doctor.py:205:    file.seek(0)  # Reset pointer
+  app\routes\doctor.py:206:    
+  app\routes\doctor.py:207:    max_size = current_app.config['MAX_CONTENT_LENGTH']
+  app\routes\doctor.py:208:    if size > max_size:
+  app\routes\doctor.py:209:        flash("File size exceeds the 10 MB limit.", "danger")
+> app\routes\doctor.py:210:        return redirect(url_for('main.view_patient_profile', 
+patient_id=patient.id))
+  app\routes\doctor.py:211:        
+  app\routes\doctor.py:212:    # Build structured directory: uploads/patients/PAT-YYYY-XXXX/
+  app\routes\doctor.py:213:    patient_dir = os.path.join(current_app.config['UPLOAD_FOLDER'], 
+patient.patient_number)
+  app\routes\doctor.py:214:    os.makedirs(patient_dir, exist_ok=True)
+  app\routes\doctor.py:215:    
+  app\routes\doctor.py:216:    # Save file with unique secure timestamp prefix
+  app\routes\doctor.py:217:    from werkzeug.utils import secure_filename
+  app\routes\doctor.py:218:    sec_name = secure_filename(filename)
+  app\routes\doctor.py:219:    unique_name = f"{int(time.time())}_{sec_name}"
+  app\routes\doctor.py:220:    save_path = os.path.join(patient_dir, unique_name)
+  app\routes\doctor.py:221:    file.save(save_path)
+  app\routes\doctor.py:222:    
+  app\routes\doctor.py:223:    # Save Document entry
+  app\routes\doctor.py:224:    doc_record = Document(
+> app\routes\doctor.py:225:        patient_id=patient.id,
+  app\routes\doctor.py:226:        doctor_id=current_user.id,
+  app\routes\doctor.py:227:        filename=unique_name,
+  app\routes\doctor.py:228:        original_filename=filename,
+  app\routes\doctor.py:229:        file_type=file_type,
+  app\routes\doctor.py:230:        file_path=save_path
+  app\routes\doctor.py:231:    )
+  app\routes\doctor.py:232:    db.session.add(doc_record)
+  app\routes\doctor.py:233:    db.session.commit()
+  app\routes\doctor.py:234:    
+  app\routes\doctor.py:235:    log_action(
+  app\routes\doctor.py:236:        action="Document Upload",
+  app\routes\doctor.py:237:        details=f"Uploaded {file_type} document '{filename}' for patient 
+{patient.full_name} ({patient.patient_number})."
+  app\routes\doctor.py:238:    )
+  app\routes\doctor.py:239:    
+  app\routes\doctor.py:240:    flash("Document uploaded successfully.", "success")
+> app\routes\doctor.py:241:    return redirect(url_for('main.view_patient_profile', patient_id=patient.id))
+  app\routes\main.py:28:            return redirect(url_for('receptionist.receptionist_dashboard'))
+  app\routes\main.py:29:    return redirect(url_for('auth.login'))
+  app\routes\main.py:30:
+  app\routes\main.py:31:@main_bp.route('/patients')
+  app\routes\main.py:32:@login_required
+> app\routes\main.py:33:def search_patients():
+  app\routes\main.py:34:    query_str = request.args.get('query', '').strip()
+  app\routes\main.py:35:    show_inactive = request.args.get('show_inactive', '0') == '1'
+  app\routes\main.py:36:    page = request.args.get('page', 1, type=int)
+  app\routes\main.py:37:    sort_by = request.args.get('sort_by', 'patient_number')
+  app\routes\main.py:38:    sort_order = request.args.get('sort_order', 'asc')
+  app\routes\main.py:39:    
+  app\routes\main.py:40:    role_name = current_user.role.name if current_user.role else ''
+  app\routes\main.py:41:    can_see_inactive = role_name in ['Administrator', 'Hospital System Administrator']
+  app\routes\main.py:42:    show_deleted = show_inactive and can_see_inactive
+  app\routes\main.py:43:    
+  app\routes\main.py:44:    patient_query = Patient.query
+  app\routes\main.py:45:    if not show_deleted:
+  app\routes\main.py:150:            action="Record Create",
+  app\routes\main.py:151:            details=f"Registered patient {new_patient.full_name} with MRN: 
+{patient_number}."
+  app\routes\main.py:152:        )
+  app\routes\main.py:153:        
+  app\routes\main.py:154:        flash(f"Patient {new_patient.full_name} successfully registered. MRN: 
+{patient_number}", "success")
+> app\routes\main.py:155:        return redirect(url_for('main.view_patient_profile', 
+patient_id=new_patient.id))
+  app\routes\main.py:156:        
+  app\routes\main.py:157:    return render_template('patient/register.html')
+  app\routes\main.py:158:
+> app\routes\main.py:159:@main_bp.route('/patients/<int:patient_id>')
+  app\routes\main.py:160:@login_required
+> app\routes\main.py:161:def view_patient_profile(patient_id):
+> app\routes\main.py:162:    patient = Patient.query.get_or_404(patient_id)
+  app\routes\main.py:163:    role_name = current_user.role.name if current_user.role else ''
+  app\routes\main.py:164:    
+  app\routes\main.py:165:    if not patient.is_active and role_name not in ['Administrator', 'Hospital System 
+Administrator']:
+  app\routes\main.py:166:        abort(403, description="This patient record is currently inactive.")
+  app\routes\main.py:167:        
+> app\routes\main.py:168:    appointments = 
+Appointment.query.filter_by(patient_id=patient.id).order_by(Appointment.appointment_date.desc()).all()
+  app\routes\main.py:169:    has_clinical_access = role_name in ['Doctor', 'Administrator', 'Hospital System 
+Administrator']
+  app\routes\main.py:170:    
+  app\routes\main.py:171:    if has_clinical_access:
+> app\routes\main.py:172:        visits = 
+MedicalVisit.query.filter_by(patient_id=patient.id).order_by(MedicalVisit.visit_date.desc()).all()
+> app\routes\main.py:173:        documents = 
+Document.query.filter_by(patient_id=patient.id).order_by(Document.uploaded_at.desc()).all()
+  app\routes\main.py:174:        return render_template(
+  app\routes\main.py:175:            'patient/profile.html',
+  app\routes\main.py:176:            patient=patient,
+  app\routes\main.py:177:            appointments=appointments,
+  app\routes\main.py:178:            visits=visits,
+  app\routes\main.py:179:            documents=documents,
+  app\routes\main.py:180:            has_clinical_access=True,
+  app\routes\main.py:181:            date=date
+  app\routes\main.py:182:        )
+  app\routes\main.py:183:    else:
+  app\routes\main.py:184:        return render_template(
+  app\routes\main.py:185:            'patient/profile.html',
+  app\routes\main.py:189:            documents=[],
+  app\routes\main.py:190:            has_clinical_access=False,
+  app\routes\main.py:191:            date=date
+  app\routes\main.py:192:        )
+  app\routes\main.py:193:
+> app\routes\main.py:194:@main_bp.route('/patients/<int:patient_id>/edit', methods=['GET', 'POST'])
+  app\routes\main.py:195:@login_required
+  app\routes\main.py:196:@role_required(['Receptionist', 'Administrator', 'Hospital System Administrator'])
+> app\routes\main.py:197:def edit_patient(patient_id):
+> app\routes\main.py:198:    patient = Patient.query.get_or_404(patient_id)
+  app\routes\main.py:199:    if not patient.is_active:
+  app\routes\main.py:200:        abort(403, description="Cannot edit an inactive patient record.")
+  app\routes\main.py:201:        
+  app\routes\main.py:202:    if request.method == 'POST':
+  app\routes\main.py:203:        first_name = request.form.get('first_name', '').strip()
+  app\routes\main.py:204:        last_name = request.form.get('last_name', '').strip()
+  app\routes\main.py:205:        dob_str = request.form.get('dob', '')
+  app\routes\main.py:206:        gender = request.form.get('gender', '')
+  app\routes\main.py:207:        phone = request.form.get('phone', '').strip()
+  app\routes\main.py:208:        email = request.form.get('email', '').strip()
+  app\routes\main.py:209:        address = request.form.get('address', '').strip()
+  app\routes\main.py:210:        emergency_contact_name = request.form.get('emergency_name', '').strip()
+  app\routes\main.py:236:            action="Record Update",
+  app\routes\main.py:237:            details=f"Updated demographics details for patient {patient.full_name} 
+({patient.patient_number})."
+  app\routes\main.py:238:        )
+  app\routes\main.py:239:        
+  app\routes\main.py:240:        flash("Patient demographic details updated successfully.", "success")
+> app\routes\main.py:241:        return redirect(url_for('main.view_patient_profile', patient_id=patient.id))
+  app\routes\main.py:242:        
+  app\routes\main.py:243:    return render_template('patient/edit.html', patient=patient)
+  app\routes\main.py:244:
+> app\routes\main.py:245:@main_bp.route('/patients/<int:patient_id>/toggle-active', methods=['POST'])
+  app\routes\main.py:246:@login_required
+  app\routes\main.py:247:@role_required(['Administrator', 'Hospital System Administrator'])
+> app\routes\main.py:248:def toggle_patient_active(patient_id):
+> app\routes\main.py:249:    patient = Patient.query.get_or_404(patient_id)
+  app\routes\main.py:250:    new_status = not patient.is_active
+  app\routes\main.py:251:    patient.is_active = new_status
+  app\routes\main.py:252:    db.session.commit()
+  app\routes\main.py:253:    
+  app\routes\main.py:254:    status_text = "activated" if new_status else "deactivated (soft delete)"
+  app\routes\main.py:255:    log_action(
+  app\routes\main.py:256:        action="Record Update",
+  app\routes\main.py:257:        details=f"Patient {patient.full_name} ({patient.patient_number}) was 
+{status_text}."
+  app\routes\main.py:258:    )
+  app\routes\main.py:259:    
+  app\routes\main.py:260:    flash(f"Patient {patient.full_name} has been successfully {status_text}.", 
+"success")
+> app\routes\main.py:261:    return redirect(url_for('main.view_patient_profile', patient_id=patient.id))
+  app\routes\main.py:262:
+  app\routes\main.py:263:@main_bp.route('/patients/documents/download/<int:doc_id>')
+  app\routes\main.py:264:@login_required
+  app\routes\main.py:265:def download_document(doc_id):
+  app\routes\main.py:266:    role_name = current_user.role.name if current_user.role else ''
+  app\routes\main.py:267:    if role_name not in ['Doctor', 'Administrator', 'Hospital System Administrator']:
+  app\routes\main.py:268:        abort(403, description="Unauthorized document access.")
+  app\routes\main.py:269:        
+  app\routes\main.py:270:    doc = Document.query.get_or_404(doc_id)
+  app\routes\main.py:271:    if os.path.exists(doc.file_path):
+  app\routes\main.py:272:        log_action("Document Download", f"Downloaded file '{doc.original_filename}' 
+for patient {doc.patient.patient_number}.")
+  app\routes\main.py:273:        return send_file(doc.file_path, as_attachment=True, 
+download_name=doc.original_filename)
+  app\routes\main.py:277:@main_bp.route('/appointments', methods=['GET', 'POST'])
+  app\routes\main.py:278:@login_required
+  app\routes\main.py:279:@role_required(['Receptionist', 'Administrator', 'Hospital System Administrator'])
+  app\routes\main.py:280:def manage_appointments():
+  app\routes\main.py:281:    if request.method == 'POST':
+> app\routes\main.py:282:        patient_id_str = request.form.get('patient_id', '')
+  app\routes\main.py:283:        doctor_id_str = request.form.get('doctor_id', '')
+  app\routes\main.py:284:        appt_date_str = request.form.get('appointment_date', '')
+  app\routes\main.py:285:        reason = request.form.get('reason', '').strip()
+  app\routes\main.py:286:        return_to_profile = request.form.get('return_to_profile') == '1'
+  app\routes\main.py:287:        
+> app\routes\main.py:288:        if not patient_id_str or not doctor_id_str or not appt_date_str:
+  app\routes\main.py:289:            flash("All fields are required to schedule an appointment.", "danger")
+  app\routes\main.py:290:            return redirect(url_for('main.manage_appointments'))
+  app\routes\main.py:291:            
+  app\routes\main.py:292:        appt_date = None
+  app\routes\main.py:293:        # Try parsing without seconds first
+  app\routes\main.py:294:        try:
+  app\routes\main.py:295:            appt_date = datetime.strptime(appt_date_str, '%Y-%m-%dT%H:%M')
+  app\routes\main.py:296:        except ValueError:
+  app\routes\main.py:297:            # Try parsing with seconds
+  app\routes\main.py:298:            try:
+  app\routes\main.py:299:                appt_date = datetime.strptime(appt_date_str, '%Y-%m-%dT%H:%M:%S')
+  app\routes\main.py:300:            except ValueError:
+  app\routes\main.py:302:                
+  app\routes\main.py:303:        if not appt_date:
+  app\routes\main.py:304:            flash("Invalid date and time format. Please choose a valid consultation 
+time.", "danger")
+  app\routes\main.py:305:            return redirect(url_for('main.manage_appointments'))
+  app\routes\main.py:306:            
+> app\routes\main.py:307:        patient_id = int(patient_id_str)
+  app\routes\main.py:308:        doctor_id = int(doctor_id_str)
+  app\routes\main.py:309:        
+  app\routes\main.py:310:        # Verify doctor is active
+  app\routes\main.py:311:        doctor = User.query.get(doctor_id)
+  app\routes\main.py:312:        if not doctor or not doctor.is_active or doctor.role.name != 'Doctor':
+  app\routes\main.py:313:            flash("Invalid doctor selected.", "danger")
+  app\routes\main.py:314:            return redirect(url_for('main.manage_appointments'))
+  app\routes\main.py:315:            
+  app\routes\main.py:316:        # Verify patient is active
+> app\routes\main.py:317:        patient = Patient.query.get(patient_id)
+  app\routes\main.py:318:        if not patient or not patient.is_active:
+  app\routes\main.py:319:            flash("Invalid patient selected.", "danger")
+  app\routes\main.py:320:            return redirect(url_for('main.manage_appointments'))
+  app\routes\main.py:321:            
+  app\routes\main.py:322:        appt = Appointment(
+> app\routes\main.py:323:            patient_id=patient_id,
+  app\routes\main.py:324:            doctor_id=doctor_id,
+  app\routes\main.py:325:            appointment_date=appt_date,
+  app\routes\main.py:326:            status='Scheduled',
+  app\routes\main.py:327:            reason=reason
+  app\routes\main.py:328:        )
+  app\routes\main.py:329:        db.session.add(appt)
+  app\routes\main.py:330:        db.session.commit()
+  app\routes\main.py:331:        
+  app\routes\main.py:332:        log_action(
+  app\routes\main.py:333:            action="Appointment Create",
+  app\routes\main.py:334:            details=f"Scheduled appointment for patient {patient.full_name} 
+({patient.patient_number}) with {doctor.full_name} on {appt_date.strftime('%Y-%m-%d %H:%M')}."
+  app\routes\main.py:335:        )
+  app\routes\main.py:336:        flash("Appointment scheduled successfully.", "success")
+  app\routes\main.py:337:        
+  app\routes\main.py:338:        if return_to_profile:
+> app\routes\main.py:339:            return redirect(url_for('main.view_patient_profile', 
+patient_id=patient_id))
+  app\routes\main.py:340:        return redirect(url_for('main.manage_appointments'))
+  app\routes\main.py:341:        
+  app\routes\main.py:342:    page = request.args.get('page', 1, type=int)
+  app\routes\main.py:343:    q = request.args.get('q', '').strip()
+> app\routes\main.py:344:    selected_patient_id = request.args.get('patient_id', type=int)
+  app\routes\main.py:345:    
+  app\routes\main.py:346:    appt_query = Appointment.query
+  app\routes\main.py:347:    if q:
+  app\routes\main.py:348:        appt_query = appt_query.join(Patient).filter(
+  app\routes\main.py:349:            Patient.first_name.like(f"%{q}%") | 
+  app\routes\main.py:350:            Patient.last_name.like(f"%{q}%") | 
+  app\routes\main.py:351:            Patient.patient_number.like(f"%{q}%")
+  app\routes\main.py:352:        )
+  app\routes\main.py:353:        
+  app\routes\main.py:354:    pagination = 
+appt_query.order_by(Appointment.appointment_date.desc()).paginate(page=page, per_page=10, error_out=False)
+  app\routes\main.py:355:    appointments = pagination.items
+  app\routes\main.py:356:    
+  app\routes\main.py:364:        appointments=appointments,
+  app\routes\main.py:365:        pagination=pagination,
+  app\routes\main.py:366:        patients=patients,
+  app\routes\main.py:367:        doctors=doctors,
+  app\routes\main.py:368:        q=q,
+> app\routes\main.py:369:        selected_patient_id=selected_patient_id
+  app\routes\main.py:370:    )
+  app\routes\main.py:371:
+  app\routes\main.py:372:@main_bp.route('/appointments/<int:appt_id>/status', methods=['POST'])
+  app\routes\main.py:373:@login_required
+  app\routes\main.py:374:@role_required(['Receptionist', 'Administrator', 'Hospital System Administrator'])
+  app\routes\main.py:375:def update_appointment_status(appt_id):
+  app\routes\main.py:376:    appt = Appointment.query.get_or_404(appt_id)
+  app\routes\main.py:377:    status = request.form.get('status', '').strip()
+  app\routes\main.py:378:    
+  app\routes\main.py:379:    if status in ['Scheduled', 'Completed', 'Cancelled', 'No-Show']:
+  app\routes\main.py:380:        old_status = appt.status
+  app\routes\main.py:381:        appt.status = status
+  app\routes\receptionist.py:46:    # -----------------------------
+  app\routes\receptionist.py:47:    # Handle Appointment Booking
+  app\routes\receptionist.py:48:    # -----------------------------
+  app\routes\receptionist.py:49:    if request.method == 'POST':
+  app\routes\receptionist.py:50:        try:
+> app\routes\receptionist.py:51:            patient_id = request.form.get('patient_id')
+  app\routes\receptionist.py:52:            doctor_id = request.form.get('doctor_id')
+  app\routes\receptionist.py:53:            appointment_date = request.form.get('appointment_date')
+  app\routes\receptionist.py:54:            reason = request.form.get('reason')
+  app\routes\receptionist.py:55:
+> app\routes\receptionist.py:56:            if not patient_id or not doctor_id or not appointment_date:
+  app\routes\receptionist.py:57:                flash('Please fill all required fields.', 'danger')
+  app\routes\receptionist.py:58:                return redirect(url_for('receptionist.manage_appointments'))
+  app\routes\receptionist.py:59:
+  app\routes\receptionist.py:60:            appointment = Appointment(
+> app\routes\receptionist.py:61:                patient_id=int(patient_id),
+  app\routes\receptionist.py:62:                doctor_id=int(doctor_id),
+  app\routes\receptionist.py:63:                appointment_date=datetime.strptime(
+  app\routes\receptionist.py:64:                    appointment_date,
+  app\routes\receptionist.py:65:                    '%Y-%m-%dT%H:%M'
+  app\routes\receptionist.py:66:                ),
+  app\routes\receptionist.py:67:                reason=reason,
+  app\routes\receptionist.py:68:                status='Scheduled'
+  app\routes\receptionist.py:69:            )
+  app\routes\receptionist.py:70:
+  app\routes\receptionist.py:71:            db.session.add(appointment)
+  app\routes\receptionist.py:72:            db.session.commit()
+  app\routes\receptionist.py:73:
+  app\templates\admin\audit_logs.html:6:
+  app\templates\admin\audit_logs.html:7:{% block content %}
+  app\templates\admin\audit_logs.html:8:<div class="row mb-4 align-items-center">
+  app\templates\admin\audit_logs.html:9:    <div class="col-12 col-md-8">
+  app\templates\admin\audit_logs.html:10:        <!-- Reusable log search component -->
+> app\templates\admin\audit_logs.html:11:        <form method="GET" action="{{ 
+url_for('admin.view_audit_logs') }}" class="w-100">
+  app\templates\admin\audit_logs.html:12:            <div class="input-group shadow-sm">
+  app\templates\admin\audit_logs.html:13:                <span class="input-group-text bg-white border-end-0 
+text-muted"><i class="bi bi-search"></i></span>
+  app\templates\admin\audit_logs.html:14:                <input type="text" name="q" class="form-control 
+border-start-0 ps-0" placeholder="Search by action, details, username, or IP address..." value="{{ q }}">
+  app\templates\admin\audit_logs.html:15:                <button class="btn btn-primary px-4 fw-medium" 
+type="submit">Filter Logs</button>
+  app\templates\admin\audit_logs.html:16:            </div>
+  app\templates\admin\audit_logs.html:17:        </form>
+  app\templates\admin\audit_logs.html:18:    </div>
+  app\templates\admin\audit_logs.html:19:    <div class="col-12 col-md-4 text-md-end mt-3 mt-md-0">
+  app\templates\admin\audit_logs.html:20:        <a href="{{ url_for('admin.sysadmin_dashboard') }}" 
+class="btn btn-outline-secondary">
+  app\templates\admin\audit_logs.html:21:            <i class="bi bi-chevron-left me-1"></i> Return Dashboard
+  app\templates\admin\audit_logs.html:22:        </a>
+  app\templates\admin\audit_logs.html:23:    </div>
+  app\templates\admin\audit_logs.html:87:{% if pagination and pagination.pages > 1 %}
+  app\templates\admin\audit_logs.html:88:<nav aria-label="Audit log pagination" class="mt-4">
+  app\templates\admin\audit_logs.html:89:    <ul class="pagination justify-content-center">
+  app\templates\admin\audit_logs.html:90:        <!-- Previous Link -->
+  app\templates\admin\audit_logs.html:91:        <li class="page-item {% if not pagination.has_prev 
+%}disabled{% endif %}">
+> app\templates\admin\audit_logs.html:92:            <a class="page-link" href="{{ 
+url_for('admin.view_audit_logs', q=q, page=pagination.prev_num) }}" aria-label="Previous">
+  app\templates\admin\audit_logs.html:93:                <span aria-hidden="true">&laquo;</span>
+  app\templates\admin\audit_logs.html:94:            </a>
+  app\templates\admin\audit_logs.html:95:        </li>
+  app\templates\admin\audit_logs.html:96:        
+  app\templates\admin\audit_logs.html:97:        <!-- Numbers -->
+  app\templates\admin\audit_logs.html:98:        {% for page_num in pagination.iter_pages(left_edge=1, 
+right_edge=1, left_current=2, right_current=2) %}
+  app\templates\admin\audit_logs.html:99:            {% if page_num %}
+  app\templates\admin\audit_logs.html:100:                <li class="page-item {% if page_num == 
+pagination.page %}active{% endif %}">
+> app\templates\admin\audit_logs.html:101:                    <a class="page-link" href="{{ 
+url_for('admin.view_audit_logs', q=q, page=page_num) }}">{{ page_num }}</a>
+  app\templates\admin\audit_logs.html:102:                </li>
+  app\templates\admin\audit_logs.html:103:            {% else %}
+  app\templates\admin\audit_logs.html:104:                <li class="page-item disabled"><span 
+class="page-link">...</span></li>
+  app\templates\admin\audit_logs.html:105:            {% endif %}
+  app\templates\admin\audit_logs.html:106:        {% endfor %}
+  app\templates\admin\audit_logs.html:107:        
+  app\templates\admin\audit_logs.html:108:        <!-- Next Link -->
+  app\templates\admin\audit_logs.html:109:        <li class="page-item {% if not pagination.has_next 
+%}disabled{% endif %}">
+> app\templates\admin\audit_logs.html:110:            <a class="page-link" href="{{ 
+url_for('admin.view_audit_logs', q=q, page=pagination.next_num) }}" aria-label="Next">
+  app\templates\admin\audit_logs.html:111:                <span aria-hidden="true">&raquo;</span>
+  app\templates\admin\audit_logs.html:112:            </a>
+  app\templates\admin\audit_logs.html:113:        </li>
+  app\templates\admin\audit_logs.html:114:    </ul>
+  app\templates\admin\audit_logs.html:115:</nav>
+  app\templates\admin\audit_logs.html:116:{% endif %}
+  app\templates\admin\audit_logs.html:117:{% endblock %}
+  app\templates\appointments\list.html:28:                <h6 class="fw-bold m-0 text-secondary"><i class="bi 
+bi-calendar-plus text-primary me-2"></i>Schedule Consultation</h6>
+  app\templates\appointments\list.html:29:            </div>
+  app\templates\appointments\list.html:30:            <div class="card-body">
+  app\templates\appointments\list.html:31:                <form action="{{ 
+url_for('main.manage_appointments') }}" method="POST" class="needs-validation" novalidate>
+  app\templates\appointments\list.html:32:                    
+> app\templates\appointments\list.html:33:                    {% if selected_patient_id %}
+  app\templates\appointments\list.html:34:                    <input type="hidden" name="return_to_profile" 
+value="1">
+  app\templates\appointments\list.html:35:                    {% endif %}
+  app\templates\appointments\list.html:36:
+  app\templates\appointments\list.html:37:                    <!-- Patient Select -->
+  app\templates\appointments\list.html:38:                    <div class="mb-3">
+> app\templates\appointments\list.html:39:                        <label for="patient_id" 
+class="form-label">Select Patient <span class="text-danger">*</span></label>
+> app\templates\appointments\list.html:40:                        <select class="form-select" id="patient_id" 
+name="patient_id" required>
+> app\templates\appointments\list.html:41:                            <option value="" {% if not 
+selected_patient_id %}selected{% endif %} disabled>Select Active Patient</option>
+  app\templates\appointments\list.html:42:                            {% for p in patients %}
+> app\templates\appointments\list.html:43:                            <option value="{{ p.id }}" {% if 
+selected_patient_id and p.id == selected_patient_id %}selected{% endif %}>{{ p.full_name }} ({{ 
+p.patient_number }})</option>
+  app\templates\appointments\list.html:44:                            {% endfor %}
+  app\templates\appointments\list.html:45:                        </select>
+  app\templates\appointments\list.html:46:                        <div class="invalid-feedback">Patient 
+selection is required.</div>
+  app\templates\appointments\list.html:47:                    </div>
+  app\templates\appointments\list.html:48:                    
+  app\templates\appointments\list.html:49:                    <!-- Doctor Select -->
+  app\templates\appointments\list.html:50:                    <div class="mb-3">
+  app\templates\appointments\list.html:51:                        <label for="doctor_id" 
+class="form-label">Select Doctor <span class="text-danger">*</span></label>
+  app\templates\appointments\list.html:52:                        <select class="form-select" id="doctor_id" 
+name="doctor_id" required>
+  app\templates\appointments\list.html:53:                            <option value="" selected 
+disabled>Select Available Doctor</option>
+  app\templates\appointments\list.html:54:                            {% for d in doctors %}
+  app\templates\appointments\list.html:55:                            <option value="{{ d.id }}">{{ 
+d.full_name }} ({{ d.department.name if d.department else 'N/A' }})</option>
+  app\templates\appointments\list.html:120:                                    <div class="fw-semibold 
+text-dark">{{ appt.appointment_date.strftime('%b %d, %Y') }}</div>
+  app\templates\appointments\list.html:121:                                    {{ 
+appt.appointment_date.strftime('%I:%M %p') }}
+  app\templates\appointments\list.html:122:                                </td>
+  app\templates\appointments\list.html:123:                                <td>
+  app\templates\appointments\list.html:124:                                    <!-- Context-aware link 
+directly to patient profile -->
+> app\templates\appointments\list.html:125:                                    <a href="{{ 
+url_for('main.view_patient_profile', patient_id=appt.patient_id) }}" class="text-decoration-none fw-semibold 
+text-dark">{{ appt.patient.full_name }}</a>
+  app\templates\appointments\list.html:126:                                    <span class="small text-muted 
+d-block">{{ appt.patient.patient_number }}</span>
+  app\templates\appointments\list.html:127:                                </td>
+  app\templates\appointments\list.html:128:                                <td>
+  app\templates\appointments\list.html:129:                                    <div class="fw-semibold 
+text-dark">{{ appt.doctor.full_name }}</div>
+  app\templates\appointments\list.html:130:                                    <span class="small 
+text-muted">{{ appt.doctor.department.name if appt.doctor.department else 'N/A' }}</span>
+  app\templates\appointments\list.html:131:                                </td>
+  app\templates\appointments\list.html:132:                                <td>
+  app\templates\appointments\list.html:133:                                    <span class="badge 
+  app\templates\appointments\list.html:134:                                        {% if appt.status == 
+'Scheduled' %}bg-warning-light text-warning
+  app\templates\appointments\list.html:135:                                        {% elif appt.status == 
+'Completed' %}bg-success-light text-success
+  app\templates\appointments\list.html:136:                                        {% elif appt.status == 
+'Cancelled' %}bg-danger-light text-danger
+  app\templates\appointments\list.html:137:                                        {% else 
+%}bg-secondary-light text-secondary{% endif %}">
+  app\templates\auth\login.html:1:<!DOCTYPE html>
+  app\templates\auth\login.html:2:<html lang="en">
+  app\templates\auth\login.html:3:<head>
+  app\templates\auth\login.html:4:    <meta charset="UTF-8">
+> app\templates\auth\login.html:5:    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  app\templates\auth\login.html:6:    <title>Login - EHR Clinical Portal</title>
+  app\templates\auth\login.html:7:    <!-- Bootstrap 5 CSS -->
+  app\templates\auth\login.html:8:    <link 
+href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  app\templates\auth\login.html:9:    <!-- Bootstrap Icons -->
+  app\templates\auth\login.html:10:    <link 
+href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  app\templates\auth\login.html:11:    <!-- Google Font (Inter) -->
+  app\templates\auth\login.html:12:    <link 
+href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  app\templates\auth\login.html:13:    
+  app\templates\auth\login.html:14:    <style>
+  app\templates\auth\login.html:15:        body {
+  app\templates\auth\login.html:16:            font-family: 'Inter', sans-serif;
+  app\templates\auth\login.html:17:            background-color: #f4f7f6; /* Light gray base */
+  app\templates\dashboard\admin.html:100:                                <td class="text-nowrap small 
+text-muted">
+  app\templates\dashboard\admin.html:101:                                    {{ 
+appt.appointment_date.strftime('%b %d, %Y - %I:%M %p') }}
+  app\templates\dashboard\admin.html:102:                                </td>
+  app\templates\dashboard\admin.html:103:                                <td>
+  app\templates\dashboard\admin.html:104:                                    <!-- Dynamic link direct to 
+profile -->
+> app\templates\dashboard\admin.html:105:                                    <a href="{{ 
+url_for('main.view_patient_profile', patient_id=appt.patient.id) }}" class="text-decoration-none fw-semibold 
+text-dark">{{ appt.patient.full_name }}</a>
+  app\templates\dashboard\admin.html:106:                                    <span class="small text-muted 
+d-block">{{ appt.patient.patient_number }}</span>
+  app\templates\dashboard\admin.html:107:                                </td>
+  app\templates\dashboard\admin.html:108:                                <td>
+  app\templates\dashboard\admin.html:109:                                    <!-- Dynamic link direct to 
+staff details -->
+  app\templates\dashboard\admin.html:110:                                    <a href="{{ 
+url_for('admin.edit_user', user_id=appt.doctor.id) }}" class="text-decoration-none fw-medium 
+text-primary">Dr. {{ appt.doctor.first_name }} {{ appt.doctor.last_name }}</a>
+  app\templates\dashboard\admin.html:111:                                </td>
+  app\templates\dashboard\admin.html:112:                                <td class="small text-muted 
+text-truncate" style="max-width: 200px;">
+  app\templates\dashboard\admin.html:113:                                    {{ appt.reason }}
+  app\templates\dashboard\admin.html:114:                                </td>
+  app\templates\dashboard\admin.html:115:                            </tr>
+  app\templates\dashboard\admin.html:116:                            {% endfor %}
+  app\templates\dashboard\admin.html:117:                        {% else %}
+  app\templates\dashboard\doctor.html:39:                                </td>
+  app\templates\dashboard\doctor.html:40:                                <td class="small text-muted 
+text-truncate" style="max-width: 180px;">
+  app\templates\dashboard\doctor.html:41:                                    {{ appt.reason }}
+  app\templates\dashboard\doctor.html:42:                                </td>
+  app\templates\dashboard\doctor.html:43:                                <td class="text-end">
+> app\templates\dashboard\doctor.html:44:                                    <a href="{{ 
+url_for('doctor.search_patients') }}?search={{ appt.patient.patient_number }}" class="btn btn-sm btn-primary">
+  app\templates\dashboard\doctor.html:45:                                        <i class="bi 
+bi-file-earmark-medical me-1"></i>Open File
+  app\templates\dashboard\doctor.html:46:                                    </a>
+  app\templates\dashboard\doctor.html:47:                                </td>
+  app\templates\dashboard\doctor.html:48:                            </tr>
+  app\templates\dashboard\doctor.html:49:                            {% endfor %}
+  app\templates\dashboard\doctor.html:50:                        {% else %}
+  app\templates\dashboard\doctor.html:51:                            <tr>
+  app\templates\dashboard\doctor.html:52:                                <td colspan="5" class="text-center 
+text-muted py-4">No scheduled consultations for today.</td>
+  app\templates\dashboard\doctor.html:53:                            </tr>
+  app\templates\dashboard\doctor.html:54:                        {% endif %}
+  app\templates\dashboard\doctor.html:55:                    </tbody>
+  app\templates\dashboard\doctor.html:56:                </table>
+  app\templates\dashboard\doctor.html:63:        <div class="card shadow-sm border-0 mb-4">
+  app\templates\dashboard\doctor.html:64:            <div class="card-header bg-white py-3 border-0">
+  app\templates\dashboard\doctor.html:65:                <h6 class="fw-bold m-0 text-secondary"><i class="bi 
+bi-search text-primary me-2"></i>Quick Patient Lookup</h6>
+  app\templates\dashboard\doctor.html:66:            </div>
+  app\templates\dashboard\doctor.html:67:            <div class="card-body">
+> app\templates\dashboard\doctor.html:68:                <form action="{{ url_for('doctor.search_patients') 
+}}" method="GET">
+  app\templates\dashboard\doctor.html:69:                    <div class="input-group mb-3">
+  app\templates\dashboard\doctor.html:70:                        <input type="text" class="form-control" 
+name="search" placeholder="Enter MRN, Name, or Phone..." required>
+  app\templates\dashboard\doctor.html:71:                        <button class="btn btn-primary" 
+type="submit">
+  app\templates\dashboard\doctor.html:72:                            <i class="bi bi-search"></i>
+  app\templates\dashboard\doctor.html:73:                        </button>
+  app\templates\dashboard\doctor.html:74:                    </div>
+  app\templates\dashboard\doctor.html:75:                    <p class="text-muted small mb-0">
+> app\templates\dashboard\doctor.html:76:                        Search active records to view medical visit 
+timelines, diagnostic history, and uploaded lab reports.
+  app\templates\dashboard\doctor.html:77:                    </p>
+  app\templates\dashboard\doctor.html:78:                </form>
+  app\templates\dashboard\doctor.html:79:            </div>
+  app\templates\dashboard\doctor.html:80:        </div>
+  app\templates\dashboard\doctor.html:81:
+  app\templates\dashboard\doctor.html:82:        <!-- Metric Card -->
+  app\templates\dashboard\doctor.html:83:        <div class="card shadow-sm border-0 bg-white">
+  app\templates\dashboard\doctor.html:84:            <div class="card-body py-4 d-flex align-items-center 
+justify-content-between">
+  app\templates\dashboard\doctor.html:85:                <div>
+  app\templates\dashboard\doctor.html:86:                    <h6 class="text-muted fw-semibold small 
+text-uppercase mb-1">My Department</h6>
+  app\templates\dashboard\doctor.html:87:                    <h5 class="fw-bold text-dark mb-0">{{ 
+current_user.department.name if current_user.department else 'N/A' }}</h5>
+  app\templates\dashboard\doctor.html:88:                    <p class="text-muted small mb-0 mt-1">License: 
+{{ current_user.license_number or 'N/A' }}</p>
+  app\templates\dashboard\receptionist.html:6:
+  app\templates\dashboard\receptionist.html:7:{% block content %}
+  app\templates\dashboard\receptionist.html:8:<div class="row g-4 mb-4">
+  app\templates\dashboard\receptionist.html:9:    <!-- Clickable Stat Card -->
+  app\templates\dashboard\receptionist.html:10:    <div class="col-12 col-md-4">
+> app\templates\dashboard\receptionist.html:11:        <a href="{{ url_for('main.search_patients') }}" 
+class="card metric-card h-100 bg-white text-decoration-none shadow-sm border-0">
+  app\templates\dashboard\receptionist.html:12:            <div class="card-body d-flex align-items-center 
+justify-content-between text-dark">
+  app\templates\dashboard\receptionist.html:13:                <div>
+  app\templates\dashboard\receptionist.html:14:                    <h6 class="text-muted fw-semibold small 
+text-uppercase mb-1">Registered Patients</h6>
+  app\templates\dashboard\receptionist.html:15:                    <h3 class="fw-bold text-dark mb-0">{{ 
+total_patients }}</h3>
+  app\templates\dashboard\receptionist.html:16:                </div>
+  app\templates\dashboard\receptionist.html:17:                <div class="metric-icon bg-medical-light 
+text-primary">
+  app\templates\dashboard\receptionist.html:18:                    <i class="bi bi-people-fill"></i>
+  app\templates\dashboard\receptionist.html:19:                </div>
+  app\templates\dashboard\receptionist.html:20:            </div>
+  app\templates\dashboard\receptionist.html:21:        </a>
+  app\templates\dashboard\receptionist.html:22:    </div>
+  app\templates\dashboard\receptionist.html:23:    
+  app\templates\dashboard\receptionist.html:67:                                <td>
+  app\templates\dashboard\receptionist.html:68:                                    <span class="badge 
+bg-light text-dark border">{{ appt.patient.patient_number }}</span>
+  app\templates\dashboard\receptionist.html:69:                                </td>
+  app\templates\dashboard\receptionist.html:70:                                <td class="fw-medium">
+  app\templates\dashboard\receptionist.html:71:                                    <!-- Direct link to 
+patient demographics folder -->
+> app\templates\dashboard\receptionist.html:72:                                    <a href="{{ 
+url_for('main.view_patient_profile', patient_id=appt.patient.id) }}" class="text-decoration-none text-dark 
+fw-bold">{{ appt.patient.full_name }}</a>
+  app\templates\dashboard\receptionist.html:73:                                </td>
+  app\templates\dashboard\receptionist.html:74:                                <td class="text-dark">
+  app\templates\dashboard\receptionist.html:75:                                    Dr. {{ 
+appt.doctor.first_name }} {{ appt.doctor.last_name }}
+  app\templates\dashboard\receptionist.html:76:                                </td>
+  app\templates\dashboard\receptionist.html:77:                                <td>
+  app\templates\dashboard\receptionist.html:78:                                    <span class="badge 
+  app\templates\dashboard\receptionist.html:79:                                        {% if appt.status == 
+'Scheduled' %}bg-warning-light text-warning
+  app\templates\dashboard\receptionist.html:80:                                        {% elif appt.status == 
+'Completed' %}bg-success-light text-success
+  app\templates\dashboard\receptionist.html:81:                                        {% elif appt.status == 
+'Cancelled' %}bg-danger-light text-danger
+  app\templates\dashboard\receptionist.html:82:                                        {% else 
+%}bg-secondary-light text-secondary{% endif %}">
+  app\templates\dashboard\receptionist.html:83:                                        {{ appt.status }}
+  app\templates\dashboard\receptionist.html:84:                                    </span>
+  app\templates\dashboard\sysadmin.html:6:
+  app\templates\dashboard\sysadmin.html:7:{% block content %}
+  app\templates\dashboard\sysadmin.html:8:<div class="row g-4 mb-4">
+  app\templates\dashboard\sysadmin.html:9:    <!-- Stat Cards (Clickable navigation destinations) -->
+  app\templates\dashboard\sysadmin.html:10:    <div class="col-12 col-sm-6 col-xl-3">
+> app\templates\dashboard\sysadmin.html:11:        <a href="{{ url_for('main.search_patients') }}" 
+class="card metric-card h-100 bg-white text-decoration-none shadow-sm border-0">
+  app\templates\dashboard\sysadmin.html:12:            <div class="card-body d-flex align-items-center 
+justify-content-between text-dark">
+  app\templates\dashboard\sysadmin.html:13:                <div>
+  app\templates\dashboard\sysadmin.html:14:                    <h6 class="text-muted fw-semibold small 
+text-uppercase mb-1">Total Patients</h6>
+  app\templates\dashboard\sysadmin.html:15:                    <h3 class="fw-bold text-dark mb-0">{{ 
+total_patients }}</h3>
+  app\templates\dashboard\sysadmin.html:16:                </div>
+  app\templates\dashboard\sysadmin.html:17:                <div class="metric-icon bg-medical-light 
+text-primary">
+  app\templates\dashboard\sysadmin.html:18:                    <i class="bi bi-people-fill"></i>
+  app\templates\dashboard\sysadmin.html:19:                </div>
+  app\templates\dashboard\sysadmin.html:20:            </div>
+  app\templates\dashboard\sysadmin.html:21:        </a>
+  app\templates\dashboard\sysadmin.html:22:    </div>
+  app\templates\dashboard\sysadmin.html:23:    
+  app\templates\dashboard\sysadmin.html:48:            </div>
+  app\templates\dashboard\sysadmin.html:49:        </a>
+  app\templates\dashboard\sysadmin.html:50:    </div>
+  app\templates\dashboard\sysadmin.html:51:
+  app\templates\dashboard\sysadmin.html:52:    <div class="col-12 col-sm-6 col-xl-3">
+> app\templates\dashboard\sysadmin.html:53:        <a href="{{ url_for('admin.view_reports') }}" class="card 
+metric-card h-100 bg-white text-decoration-none shadow-sm border-0">
+  app\templates\dashboard\sysadmin.html:54:            <div class="card-body d-flex align-items-center 
+justify-content-between text-dark">
+  app\templates\dashboard\sysadmin.html:55:                <div>
+  app\templates\dashboard\sysadmin.html:56:                    <h6 class="text-muted fw-semibold small 
+text-uppercase mb-1">Today's Visits</h6>
+  app\templates\dashboard\sysadmin.html:57:                    <h3 class="fw-bold text-dark mb-0">{{ 
+todays_visits }}</h3>
+  app\templates\dashboard\sysadmin.html:58:                </div>
+  app\templates\dashboard\sysadmin.html:59:                <div class="metric-icon bg-warning-light 
+text-warning">
+  app\templates\dashboard\sysadmin.html:60:                    <i class="bi bi-hospital"></i>
+  app\templates\dashboard\sysadmin.html:61:                </div>
+  app\templates\dashboard\sysadmin.html:62:            </div>
+  app\templates\dashboard\sysadmin.html:63:        </a>
+  app\templates\dashboard\sysadmin.html:64:    </div>
+  app\templates\dashboard\sysadmin.html:65:</div>
+  app\templates\dashboard\sysadmin.html:78:                        <span class="fw-semibold text-dark">SQLite 
+Database Backup</span>
+  app\templates\dashboard\sysadmin.html:79:                    </div>
+  app\templates\dashboard\sysadmin.html:80:                    <p class="text-muted small mb-3">
+  app\templates\dashboard\sysadmin.html:81:                        Download a copy of the live SQLite 
+database file. This contains all patients, visit timelines, users, and credentials.
+  app\templates\dashboard\sysadmin.html:82:                    </p>
+> app\templates\dashboard\sysadmin.html:83:                    <a href="{{ 
+url_for('admin.backup_download_view') }}" class="btn btn-outline-primary w-100 btn-sm">
+  app\templates\dashboard\sysadmin.html:84:                        <i class="bi bi-download me-2"></i>Backup 
+Database
+  app\templates\dashboard\sysadmin.html:85:                    </a>
+  app\templates\dashboard\sysadmin.html:86:                </div>
+  app\templates\dashboard\sysadmin.html:87:                
+  app\templates\dashboard\sysadmin.html:88:                <div class="p-3 bg-light rounded">
+  app\templates\dashboard\sysadmin.html:89:                    <div class="d-flex align-items-center mb-2">
+  app\templates\dashboard\sysadmin.html:90:                        <i class="bi bi-clock-history text-warning 
+fs-4 me-2"></i>
+  app\templates\dashboard\sysadmin.html:91:                        <span class="fw-semibold 
+text-dark">Database Restore Tool</span>
+  app\templates\dashboard\sysadmin.html:92:                    </div>
+  app\templates\dashboard\sysadmin.html:93:                    <p class="text-muted small mb-0">
+  app\templates\dashboard\sysadmin.html:94:                        <span class="badge bg-warning text-dark 
+me-1">Future Release</span> 
+  app\templates\dashboard\sysadmin.html:95:                        Database restore capabilities will be 
+introduced as an administrative tool in a later version.
+  app\templates\dashboard\sysadmin.html:129:    <!-- Recent System Actions Audit Log -->
+  app\templates\dashboard\sysadmin.html:130:    <div class="col-12 col-xl-6">
+  app\templates\dashboard\sysadmin.html:131:        <div class="card shadow-sm border-0">
+  app\templates\dashboard\sysadmin.html:132:            <div class="card-header bg-white py-3 border-0 d-flex 
+align-items-center justify-content-between">
+  app\templates\dashboard\sysadmin.html:133:                <h6 class="fw-bold m-0 text-secondary"><i 
+class="bi bi-journal-text text-primary me-2"></i>Recent System Activity</h6>
+> app\templates\dashboard\sysadmin.html:134:                <a href="{{ url_for('admin.view_audit_logs') }}" 
+class="btn btn-sm btn-outline-primary py-1 px-2 text-decoration-none">
+> app\templates\dashboard\sysadmin.html:135:                    <i class="bi bi-eye"></i> View All
+  app\templates\dashboard\sysadmin.html:136:                </a>
+  app\templates\dashboard\sysadmin.html:137:            </div>
+  app\templates\dashboard\sysadmin.html:138:            <div class="table-responsive">
+  app\templates\dashboard\sysadmin.html:139:                <table class="table table-hover align-middle 
+mb-0">
+  app\templates\dashboard\sysadmin.html:140:                    <thead>
+  app\templates\dashboard\sysadmin.html:141:                        <tr>
+  app\templates\dashboard\sysadmin.html:142:                            <th>Time</th>
+  app\templates\dashboard\sysadmin.html:143:                            <th>Action</th>
+  app\templates\dashboard\sysadmin.html:144:                            <th>Details</th>
+  app\templates\dashboard\sysadmin.html:145:                        </tr>
+  app\templates\dashboard\sysadmin.html:146:                    </thead>
+  app\templates\dashboard\sysadmin.html:147:                    <tbody>
+  app\templates\dashboard\sysadmin.html:171:    <!-- Recent Login events -->
+  app\templates\dashboard\sysadmin.html:172:    <div class="col-12 col-xl-6">
+  app\templates\dashboard\sysadmin.html:173:        <div class="card shadow-sm border-0">
+  app\templates\dashboard\sysadmin.html:174:            <div class="card-header bg-white py-3 border-0 d-flex 
+align-items-center justify-content-between">
+  app\templates\dashboard\sysadmin.html:175:                <h6 class="fw-bold m-0 text-secondary"><i 
+class="bi bi-key-fill text-primary me-2"></i>Recent Authentication Events</h6>
+> app\templates\dashboard\sysadmin.html:176:                <a href="{{ url_for('admin.view_audit_logs') 
+}}?q=Login" class="btn btn-sm btn-outline-primary py-1 px-2 text-decoration-none">
+> app\templates\dashboard\sysadmin.html:177:                    <i class="bi bi-eye"></i> View Logins
+  app\templates\dashboard\sysadmin.html:178:                </a>
+  app\templates\dashboard\sysadmin.html:179:            </div>
+  app\templates\dashboard\sysadmin.html:180:            <div class="table-responsive">
+  app\templates\dashboard\sysadmin.html:181:                <table class="table table-hover align-middle 
+mb-0">
+  app\templates\dashboard\sysadmin.html:182:                    <thead>
+  app\templates\dashboard\sysadmin.html:183:                        <tr>
+  app\templates\dashboard\sysadmin.html:184:                            <th>Time</th>
+  app\templates\dashboard\sysadmin.html:185:                            <th>Result</th>
+  app\templates\dashboard\sysadmin.html:186:                            <th>IP Address</th>
+  app\templates\dashboard\sysadmin.html:187:                        </tr>
+  app\templates\dashboard\sysadmin.html:188:                    </thead>
+  app\templates\dashboard\sysadmin.html:189:                    <tbody>
+  app\templates\errors\403.html:1:<!DOCTYPE html>
+  app\templates\errors\403.html:2:<html lang="en">
+  app\templates\errors\403.html:3:<head>
+  app\templates\errors\403.html:4:    <meta charset="UTF-8">
+> app\templates\errors\403.html:5:    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  app\templates\errors\403.html:6:    <title>403 Forbidden - EHR Clinical Portal</title>
+  app\templates\errors\403.html:7:    <!-- Bootstrap 5 CSS -->
+  app\templates\errors\403.html:8:    <link 
+href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  app\templates\errors\403.html:9:    <!-- Bootstrap Icons -->
+  app\templates\errors\403.html:10:    <link 
+href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  app\templates\errors\403.html:11:    <!-- Google Font (Inter) -->
+  app\templates\errors\403.html:12:    <link 
+href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  app\templates\errors\403.html:13:    <style>
+  app\templates\errors\403.html:14:        body {
+  app\templates\errors\403.html:15:            font-family: 'Inter', sans-serif;
+  app\templates\errors\403.html:16:            background-color: #f4f7f6;
+  app\templates\errors\403.html:17:            height: 100vh;
+  app\templates\errors\404.html:1:<!DOCTYPE html>
+  app\templates\errors\404.html:2:<html lang="en">
+  app\templates\errors\404.html:3:<head>
+  app\templates\errors\404.html:4:    <meta charset="UTF-8">
+> app\templates\errors\404.html:5:    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  app\templates\errors\404.html:6:    <title>404 Page Not Found - EHR Clinical Portal</title>
+  app\templates\errors\404.html:7:    <!-- Bootstrap 5 CSS -->
+  app\templates\errors\404.html:8:    <link 
+href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  app\templates\errors\404.html:9:    <!-- Bootstrap Icons -->
+  app\templates\errors\404.html:10:    <link 
+href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  app\templates\errors\404.html:11:    <!-- Google Font (Inter) -->
+  app\templates\errors\404.html:12:    <link 
+href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  app\templates\errors\404.html:13:    <style>
+  app\templates\errors\404.html:14:        body {
+  app\templates\errors\404.html:15:            font-family: 'Inter', sans-serif;
+  app\templates\errors\404.html:16:            background-color: #f4f7f6;
+  app\templates\errors\404.html:17:            height: 100vh;
+  app\templates\errors\500.html:1:<!DOCTYPE html>
+  app\templates\errors\500.html:2:<html lang="en">
+  app\templates\errors\500.html:3:<head>
+  app\templates\errors\500.html:4:    <meta charset="UTF-8">
+> app\templates\errors\500.html:5:    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  app\templates\errors\500.html:6:    <title>500 Internal Error - EHR Clinical Portal</title>
+  app\templates\errors\500.html:7:    <!-- Bootstrap 5 CSS -->
+  app\templates\errors\500.html:8:    <link 
+href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  app\templates\errors\500.html:9:    <!-- Bootstrap Icons -->
+  app\templates\errors\500.html:10:    <link 
+href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  app\templates\errors\500.html:11:    <!-- Google Font (Inter) -->
+  app\templates\errors\500.html:12:    <link 
+href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  app\templates\errors\500.html:13:    <style>
+  app\templates\errors\500.html:14:        body {
+  app\templates\errors\500.html:15:            font-family: 'Inter', sans-serif;
+  app\templates\errors\500.html:16:            background-color: #f4f7f6;
+  app\templates\errors\500.html:17:            height: 100vh;
+  app\templates\patient\edit.html:11:            <div class="card-header bg-white py-3 border-0">
+  app\templates\patient\edit.html:12:                <h6 class="fw-bold m-0 text-secondary"><i class="bi 
+bi-pencil-square text-primary me-2"></i>Update Demographics: {{ patient.patient_number }}</h6>
+  app\templates\patient\edit.html:13:            </div>
+  app\templates\patient\edit.html:14:            
+  app\templates\patient\edit.html:15:            <div class="card-body">
+> app\templates\patient\edit.html:16:                <form action="{{ url_for('main.edit_patient', 
+patient_id=patient.id) }}" method="POST" class="needs-validation" novalidate>
+  app\templates\patient\edit.html:17:                    
+  app\templates\patient\edit.html:18:                    <div class="row g-3 mb-4">
+  app\templates\patient\edit.html:19:                        <h6 class="fw-semibold text-primary 
+border-bottom pb-2">Basic Demographics</h6>
+  app\templates\patient\edit.html:20:                        
+  app\templates\patient\edit.html:21:                        <div class="col-12 col-md-6">
+  app\templates\patient\edit.html:22:                            <label for="first_name" 
+class="form-label">First Name <span class="text-danger">*</span></label>
+  app\templates\patient\edit.html:23:                            <input type="text" class="form-control" 
+id="first_name" name="first_name" value="{{ patient.first_name }}" required>
+  app\templates\patient\edit.html:24:                            <div class="invalid-feedback">First name is 
+required.</div>
+  app\templates\patient\edit.html:25:                        </div>
+  app\templates\patient\edit.html:26:                        
+  app\templates\patient\edit.html:27:                        <div class="col-12 col-md-6">
+  app\templates\patient\edit.html:28:                            <label for="last_name" 
+class="form-label">Last Name <span class="text-danger">*</span></label>
+  app\templates\patient\edit.html:83:                            <div class="invalid-feedback">Emergency 
+contact phone is required.</div>
+  app\templates\patient\edit.html:84:                        </div>
+  app\templates\patient\edit.html:85:                    </div>
+  app\templates\patient\edit.html:86:
+  app\templates\patient\edit.html:87:                    <div class="d-flex justify-content-end gap-2 
+border-top pt-3">
+> app\templates\patient\edit.html:88:                        <a href="{{ url_for('main.view_patient_profile', 
+patient_id=patient.id) }}" class="btn btn-outline-secondary">Cancel</a>
+  app\templates\patient\edit.html:89:                        <button type="submit" class="btn btn-primary">
+  app\templates\patient\edit.html:90:                            <i class="bi bi-save me-1"></i> Save Changes
+  app\templates\patient\edit.html:91:                        </button>
+  app\templates\patient\edit.html:92:                    </div>
+  app\templates\patient\edit.html:93:                </form>
+  app\templates\patient\edit.html:94:            </div>
+  app\templates\patient\edit.html:95:        </div>
+  app\templates\patient\edit.html:96:    </div>
+  app\templates\patient\edit.html:97:</div>
+  app\templates\patient\edit.html:98:{% endblock %}
+  app\templates\patient\edit.html:99:
+  app\templates\patient\edit.html:100:{% block extra_js %}
+  app\templates\patient\profile.html:13:        {% elif current_user.role.name == 'Receptionist' %}
+  app\templates\patient\profile.html:14:            <li class="breadcrumb-item"><a href="{{ 
+url_for('receptionist.receptionist_dashboard') }}">Dashboard</a></li>
+  app\templates\patient\profile.html:15:        {% else %}
+  app\templates\patient\profile.html:16:            <li class="breadcrumb-item"><a href="{{ 
+url_for('admin.sysadmin_dashboard') if current_user.role.name == 'Hospital System Administrator' else 
+url_for('admin.admin_dashboard') }}">Dashboard</a></li>
+  app\templates\patient\profile.html:17:        {% endif %}
+> app\templates\patient\profile.html:18:        <li class="breadcrumb-item"><a href="{{ 
+url_for('main.search_patients') }}">Patients</a></li>
+  app\templates\patient\profile.html:19:        <li class="breadcrumb-item active" aria-current="page">{{ 
+patient.full_name }}</li>
+  app\templates\patient\profile.html:20:    </ol>
+  app\templates\patient\profile.html:21:</nav>
+  app\templates\patient\profile.html:22:
+  app\templates\patient\profile.html:23:<!-- Return to Search results if query exists -->
+  app\templates\patient\profile.html:24:{% if request.args.get('search_query') %}
+  app\templates\patient\profile.html:25:<div class="mb-3">
+> app\templates\patient\profile.html:26:    <a href="{{ url_for('main.search_patients', 
+query=request.args.get('search_query'), page=request.args.get('page', 1), 
+show_inactive=request.args.get('show_inactive', '0'), sort_by=request.args.get('sort_by', 'patient_number'), 
+sort_order=request.args.get('sort_order', 'asc')) }}" class="btn btn-sm btn-outline-secondary">
+  app\templates\patient\profile.html:27:        <i class="bi bi-arrow-left me-1"></i> Back to Search Results
+  app\templates\patient\profile.html:28:    </a>
+  app\templates\patient\profile.html:29:</div>
+  app\templates\patient\profile.html:30:{% endif %}
+  app\templates\patient\profile.html:31:
+  app\templates\patient\profile.html:32:<div class="row g-4">
+  app\templates\patient\profile.html:33:    <!-- Left Column: Patient Demographic Card -->
+  app\templates\patient\profile.html:34:    <div class="col-12 col-lg-4">
+  app\templates\patient\profile.html:35:        <div class="card shadow-sm border-0 mb-4">
+  app\templates\patient\profile.html:36:            <div class="card-header bg-white py-3 d-flex 
+align-items-center justify-content-between border-0">
+  app\templates\patient\profile.html:37:                <h6 class="fw-bold m-0 text-secondary"><i class="bi 
+bi-person-card-heading text-primary me-2"></i>Demographics</h6>
+  app\templates\patient\profile.html:38:                {% if patient.is_active %}
+  app\templates\patient\profile.html:87:                </div>
+  app\templates\patient\profile.html:88:                
+  app\templates\patient\profile.html:89:                <!-- Action Buttons based on privileges -->
+  app\templates\patient\profile.html:90:                <div class="d-grid gap-2 mt-4">
+  app\templates\patient\profile.html:91:                    {% if current_user.role.name in ['Receptionist', 
+'Administrator', 'Hospital System Administrator'] and patient.is_active %}
+> app\templates\patient\profile.html:92:                    <a href="{{ url_for('main.edit_patient', 
+patient_id=patient.id) }}" class="btn btn-outline-secondary btn-sm">
+  app\templates\patient\profile.html:93:                        <i class="bi bi-pencil-fill me-1"></i> Edit 
+Demographics
+  app\templates\patient\profile.html:94:                    </a>
+> app\templates\patient\profile.html:95:                    <a href="{{ url_for('main.manage_appointments', 
+patient_id=patient.id) }}" class="btn btn-primary btn-sm">
+  app\templates\patient\profile.html:96:                        <i class="bi bi-calendar-plus me-1"></i> 
+Schedule Appointment
+  app\templates\patient\profile.html:97:                    </a>
+  app\templates\patient\profile.html:98:                    {% endif %}
+  app\templates\patient\profile.html:99:                    
+  app\templates\patient\profile.html:100:                    {% if current_user.role.name in 
+['Administrator', 'Hospital System Administrator'] %}
+> app\templates\patient\profile.html:101:                    <form action="{{ 
+url_for('main.toggle_patient_active', patient_id=patient.id) }}" method="POST" id="deactivateForm">
+  app\templates\patient\profile.html:102:                        <button type="submit" class="btn btn-sm 
+w-100 {% if patient.is_active %}btn-outline-danger{% else %}btn-success{% endif %}">
+  app\templates\patient\profile.html:103:                            <i class="bi {% if patient.is_active 
+%}bi-person-x-fill{% else %}bi-person-check-fill{% endif %} me-1"></i>
+  app\templates\patient\profile.html:104:                            {% if patient.is_active %}Deactivate 
+Patient{% else %}Restore Patient Record{% endif %}
+  app\templates\patient\profile.html:105:                        </button>
+  app\templates\patient\profile.html:106:                    </form>
+  app\templates\patient\profile.html:107:                    {% endif %}
+  app\templates\patient\profile.html:108:                </div>
+  app\templates\patient\profile.html:109:            </div>
+  app\templates\patient\profile.html:110:        </div>
+  app\templates\patient\profile.html:111:    </div>
+  app\templates\patient\profile.html:112:    
+  app\templates\patient\profile.html:113:    <!-- Right Column: Tabs based on Role Access -->
+  app\templates\patient\profile.html:114:    <div class="col-12 col-lg-8">
+  app\templates\patient\profile.html:115:        {% if has_clinical_access %}
+> app\templates\patient\profile.html:116:            <!-- CLINICAL VIEW: Doctors, Admins, and System 
+Administrators -->
+  app\templates\patient\profile.html:117:            <div class="card shadow-sm border-0">
+  app\templates\patient\profile.html:118:                <div class="card-header bg-white border-0 py-3">
+  app\templates\patient\profile.html:119:                    <!-- Tab Navigation -->
+  app\templates\patient\profile.html:120:                    <ul class="nav nav-tabs card-header-tabs" 
+id="clinicalTab" role="tablist">
+  app\templates\patient\profile.html:121:                        <li class="nav-item" role="presentation">
+  app\templates\patient\profile.html:122:                            <button class="nav-link active 
+fw-semibold" id="visits-tab" data-bs-toggle="tab" data-bs-target="#visits" type="button" role="tab" 
+aria-controls="visits" aria-selected="true">
+  app\templates\patient\profile.html:123:                                <i class="bi bi-clock-history 
+me-1"></i> Medical Timeline
+  app\templates\patient\profile.html:124:                            </button>
+  app\templates\patient\profile.html:125:                        </li>
+  app\templates\patient\profile.html:126:                        <li class="nav-item" role="presentation">
+  app\templates\patient\profile.html:127:                            <button class="nav-link fw-semibold" 
+id="prescriptions-tab" data-bs-toggle="tab" data-bs-target="#prescriptions" type="button" role="tab" 
+aria-controls="prescriptions" aria-selected="false">
+  app\templates\patient\profile.html:128:                                <i class="bi bi-capsule me-1"></i> 
+Prescriptions
+  app\templates\patient\profile.html:151:                    <!-- Tab 1: Chronological Visit History 
+(Timeline) -->
+  app\templates\patient\profile.html:152:                    <div class="tab-pane fade show active" 
+id="visits" role="tabpanel" aria-labelledby="visits-tab">
+  app\templates\patient\profile.html:153:                        <div class="d-flex align-items-center 
+justify-content-between mb-4">
+  app\templates\patient\profile.html:154:                            <h6 class="fw-bold text-secondary 
+mb-0">Visit History Timeline</h6>
+  app\templates\patient\profile.html:155:                            {% if current_user.role.name == 'Doctor' 
+and patient.is_active %}
+> app\templates\patient\profile.html:156:                            <a href="{{ 
+url_for('doctor.create_medical_visit', patient_id=patient.id) }}" class="btn btn-primary btn-sm shadow-sm">
+  app\templates\patient\profile.html:157:                                <i class="bi bi-plus-lg me-1"></i> 
+Record Medical Visit
+  app\templates\patient\profile.html:158:                            </a>
+  app\templates\patient\profile.html:159:                            {% endif %}
+  app\templates\patient\profile.html:160:                        </div>
+  app\templates\patient\profile.html:161:                        
+  app\templates\patient\profile.html:162:                        {% if visits %}
+  app\templates\patient\profile.html:163:                            <div class="timeline">
+  app\templates\patient\profile.html:164:                                {% for visit in visits %}
+  app\templates\patient\profile.html:165:                                <div class="timeline-item">
+  app\templates\patient\profile.html:166:                                    <div class="card border 
+shadow-sm mb-3">
+  app\templates\patient\profile.html:167:                                        <div class="card-header 
+bg-light d-flex align-items-center justify-content-between py-2 border-bottom-0">
+  app\templates\patient\profile.html:168:                                            <div>
+  app\templates\patient\profile.html:301:                        <!-- Upload Box (Doctors only) -->
+  app\templates\patient\profile.html:302:                        {% if current_user.role.name == 'Doctor' and 
+patient.is_active %}
+  app\templates\patient\profile.html:303:                        <div class="card border-primary-light 
+bg-light-subtle mb-4">
+  app\templates\patient\profile.html:304:                            <div class="card-body">
+  app\templates\patient\profile.html:305:                                <h6 class="fw-semibold text-dark 
+mb-2"><i class="bi bi-cloud-upload me-2 text-primary"></i>Upload Diagnostic File</h6>
+> app\templates\patient\profile.html:306:                                <form action="{{ 
+url_for('doctor.upload_patient_document', patient_id=patient.id) }}" method="POST" 
+enctype="multipart/form-data" class="row g-2 align-items-center">
+  app\templates\patient\profile.html:307:                                    <div class="col-12 col-md-5">
+  app\templates\patient\profile.html:308:                                        <input type="file" 
+name="file" class="form-control form-control-sm" required>
+  app\templates\patient\profile.html:309:                                    </div>
+  app\templates\patient\profile.html:310:                                    <div class="col-12 col-md-4">
+  app\templates\patient\profile.html:311:                                        <select name="file_type" 
+class="form-select form-select-sm" required>
+  app\templates\patient\profile.html:312:                                            <option value="" 
+selected disabled>Select Category</option>
+  app\templates\patient\profile.html:313:                                            <option 
+value="Prescription">Prescription</option>
+  app\templates\patient\profile.html:314:                                            <option value="Lab 
+Report">Lab Report</option>
+  app\templates\patient\profile.html:315:                                            <option value="Scan 
+Report">Scan Report</option>
+  app\templates\patient\profile.html:316:                                            <option 
+value="X-Ray">X-Ray</option>
+  app\templates\patient\profile.html:317:                                            <option value="Discharge 
+Summary">Discharge Summary</option>
+  app\templates\patient\profile.html:318:                                            <option 
+value="Other">Other</option>
+  app\templates\patient\profile.html:476:                    </div>
+  app\templates\patient\profile.html:477:                    
+  app\templates\patient\profile.html:478:                </div>
+  app\templates\patient\profile.html:479:            </div>
+  app\templates\patient\profile.html:480:        {% else %}
+> app\templates\patient\profile.html:481:            <!-- RECEPTIONIST VIEW: Demographics & Appointments 
+history only -->
+  app\templates\patient\profile.html:482:            <div class="card shadow-sm border-0">
+  app\templates\patient\profile.html:483:                <div class="card-header bg-white py-3 border-0 
+border-bottom">
+  app\templates\patient\profile.html:484:                    <h6 class="fw-bold m-0 text-secondary"><i 
+class="bi bi-calendar3 text-primary me-2"></i>Patient Appointments History</h6>
+  app\templates\patient\profile.html:485:                </div>
+  app\templates\patient\profile.html:486:                
+  app\templates\patient\profile.html:487:                <div class="card-body">
+  app\templates\patient\profile.html:488:                    {% if appointments %}
+  app\templates\patient\profile.html:489:                        <div class="table-responsive shadow-none 
+border">
+  app\templates\patient\profile.html:490:                            <table class="table table-hover 
+align-middle mb-0">
+  app\templates\patient\profile.html:491:                                <thead>
+  app\templates\patient\profile.html:492:                                    <tr>
+  app\templates\patient\profile.html:493:                                        <th>Date & Time</th>
+  app\templates\patient\register.html:84:                            <div class="invalid-feedback">Emergency 
+contact phone is required.</div>
+  app\templates\patient\register.html:85:                        </div>
+  app\templates\patient\register.html:86:                    </div>
+  app\templates\patient\register.html:87:
+  app\templates\patient\register.html:88:                    <div class="d-flex justify-content-end gap-2 
+border-top pt-3">
+> app\templates\patient\register.html:89:                        <a href="{{ url_for('main.search_patients') 
+}}" class="btn btn-outline-secondary">Cancel</a>
+  app\templates\patient\register.html:90:                        <button type="submit" class="btn 
+btn-primary">
+  app\templates\patient\register.html:91:                            <i class="bi bi-check-circle me-1"></i> 
+Register Patient
+  app\templates\patient\register.html:92:                        </button>
+  app\templates\patient\register.html:93:                    </div>
+  app\templates\patient\register.html:94:                </form>
+  app\templates\patient\register.html:95:            </div>
+  app\templates\patient\register.html:96:        </div>
+  app\templates\patient\register.html:97:    </div>
+  app\templates\patient\register.html:98:</div>
+  app\templates\patient\register.html:99:{% endblock %}
+  app\templates\patient\register.html:100:
+  app\templates\patient\register.html:101:{% block extra_js %}
+  app\templates\patient\search.html:35:    <div class="table-responsive">
+  app\templates\patient\search.html:36:        <table class="table table-hover align-middle mb-0">
+  app\templates\patient\search.html:37:            <thead>
+  app\templates\patient\search.html:38:                <tr>
+  app\templates\patient\search.html:39:                    <th>
+> app\templates\patient\search.html:40:                        <a href="{{ url_for('main.search_patients', 
+query=query, show_inactive=show_inactive, sort_by='patient_number', sort_order='desc' if sort_by == 
+'patient_number' and sort_order == 'asc' else 'asc') }}" class="text-decoration-none text-secondary">
+  app\templates\patient\search.html:41:                            Patient ID / MRN
+  app\templates\patient\search.html:42:                            {% if sort_by == 'patient_number' %}
+  app\templates\patient\search.html:43:                                <i class="bi bi-arrow-{% if sort_order 
+== 'asc' %}up{% else %}down{% endif %} small"></i>
+  app\templates\patient\search.html:44:                            {% endif %}
+  app\templates\patient\search.html:45:                        </a>
+  app\templates\patient\search.html:46:                    </th>
+  app\templates\patient\search.html:47:                    <th>
+> app\templates\patient\search.html:48:                        <a href="{{ url_for('main.search_patients', 
+query=query, show_inactive=show_inactive, sort_by='first_name', sort_order='desc' if sort_by == 'first_name' 
+and sort_order == 'asc' else 'asc') }}" class="text-decoration-none text-secondary">
+  app\templates\patient\search.html:49:                            Name
+  app\templates\patient\search.html:50:                            {% if sort_by == 'first_name' %}
+  app\templates\patient\search.html:51:                                <i class="bi bi-arrow-{% if sort_order 
+== 'asc' %}up{% else %}down{% endif %} small"></i>
+  app\templates\patient\search.html:52:                            {% endif %}
+  app\templates\patient\search.html:53:                        </a>
+  app\templates\patient\search.html:54:                    </th>
+  app\templates\patient\search.html:55:                    <th>
+> app\templates\patient\search.html:56:                        <a href="{{ url_for('main.search_patients', 
+query=query, show_inactive=show_inactive, sort_by='dob', sort_order='desc' if sort_by == 'dob' and sort_order 
+== 'asc' else 'asc') }}" class="text-decoration-none text-secondary">
+  app\templates\patient\search.html:57:                            Age / DOB
+  app\templates\patient\search.html:58:                            {% if sort_by == 'dob' %}
+  app\templates\patient\search.html:59:                                <i class="bi bi-arrow-{% if sort_order 
+== 'asc' %}up{% else %}down{% endif %} small"></i>
+  app\templates\patient\search.html:60:                            {% endif %}
+  app\templates\patient\search.html:61:                        </a>
+  app\templates\patient\search.html:62:                    </th>
+  app\templates\patient\search.html:63:                    <th>Gender</th>
+  app\templates\patient\search.html:64:                    <th>Phone</th>
+  app\templates\patient\search.html:65:                    {% if can_see_inactive %}
+  app\templates\patient\search.html:66:                    <th>Status</th>
+  app\templates\patient\search.html:67:                    {% endif %}
+  app\templates\patient\search.html:68:                    <th class="text-end">Actions</th>
+  app\templates\patient\search.html:95:                                <span class="badge bg-danger-light 
+text-danger">Inactive</span>
+  app\templates\patient\search.html:96:                            {% endif %}
+  app\templates\patient\search.html:97:                        </td>
+  app\templates\patient\search.html:98:                        {% endif %}
+  app\templates\patient\search.html:99:                        <td class="text-end">
+> app\templates\patient\search.html:100:                            <a href="{{ 
+url_for('main.view_patient_profile', patient_id=p.id) }}" class="btn btn-sm btn-outline-primary me-1">
+> app\templates\patient\search.html:101:                                <i class="bi bi-eye-fill"></i> View
+  app\templates\patient\search.html:102:                            </a>
+  app\templates\patient\search.html:103:                            {% if p.is_active and 
+current_user.role.name in ['Receptionist', 'Administrator', 'Hospital System Administrator'] %}
+> app\templates\patient\search.html:104:                            <a href="{{ url_for('main.edit_patient', 
+patient_id=p.id) }}" class="btn btn-sm btn-outline-secondary">
+  app\templates\patient\search.html:105:                                <i class="bi bi-pencil-fill"></i> Edit
+  app\templates\patient\search.html:106:                            </a>
+  app\templates\patient\search.html:107:                            {% endif %}
+  app\templates\patient\search.html:108:                        </td>
+  app\templates\patient\search.html:109:                    </tr>
+  app\templates\patient\search.html:110:                    {% endfor %}
+  app\templates\patient\search.html:111:                {% else %}
+  app\templates\patient\search.html:112:                    <tr>
+  app\templates\patient\search.html:113:                        <td colspan="{% if can_see_inactive %}7{% 
+else %}6{% endif %}" class="text-center py-4 text-muted">
+  app\templates\patient\search.html:114:                            <i class="bi bi-people fs-2 mb-2 
+d-block"></i>
+  app\templates\patient\search.html:115:                            No patient records found.
+  app\templates\patient\search.html:116:                        </td>
+  app\templates\patient\search.html:125:{% if pagination and pagination.pages > 1 %}
+  app\templates\patient\search.html:126:<nav aria-label="Patient search pagination">
+  app\templates\patient\search.html:127:    <ul class="pagination justify-content-center">
+  app\templates\patient\search.html:128:        <!-- Previous Page Link -->
+  app\templates\patient\search.html:129:        <li class="page-item {% if not pagination.has_prev 
+%}disabled{% endif %}">
+> app\templates\patient\search.html:130:            <a class="page-link" href="{{ 
+url_for('main.search_patients', query=query, show_inactive='1' if show_inactive else '0', 
+page=pagination.prev_num, sort_by=sort_by, sort_order=sort_order) }}" aria-label="Previous">
+  app\templates\patient\search.html:131:                <span aria-hidden="true">&laquo;</span>
+  app\templates\patient\search.html:132:            </a>
+  app\templates\patient\search.html:133:        </li>
+  app\templates\patient\search.html:134:        
+  app\templates\patient\search.html:135:        <!-- Page Numbers -->
+  app\templates\patient\search.html:136:        {% for page_num in pagination.iter_pages(left_edge=1, 
+right_edge=1, left_current=2, right_current=2) %}
+  app\templates\patient\search.html:137:            {% if page_num %}
+  app\templates\patient\search.html:138:                <li class="page-item {% if page_num == 
+pagination.page %}active{% endif %}">
+> app\templates\patient\search.html:139:                    <a class="page-link" href="{{ 
+url_for('main.search_patients', query=query, show_inactive='1' if show_inactive else '0', page=page_num, 
+sort_by=sort_by, sort_order=sort_order) }}">{{ page_num }}</a>
+  app\templates\patient\search.html:140:                </li>
+  app\templates\patient\search.html:141:            {% else %}
+  app\templates\patient\search.html:142:                <li class="page-item disabled"><span 
+class="page-link">...</span></li>
+  app\templates\patient\search.html:143:            {% endif %}
+  app\templates\patient\search.html:144:        {% endfor %}
+  app\templates\patient\search.html:145:        
+  app\templates\patient\search.html:146:        <!-- Next Page Link -->
+  app\templates\patient\search.html:147:        <li class="page-item {% if not pagination.has_next 
+%}disabled{% endif %}">
+> app\templates\patient\search.html:148:            <a class="page-link" href="{{ 
+url_for('main.search_patients', query=query, show_inactive='1' if show_inactive else '0', 
+page=pagination.next_num, sort_by=sort_by, sort_order=sort_order) }}" aria-label="Next">
+  app\templates\patient\search.html:149:                <span aria-hidden="true">&raquo;</span>
+  app\templates\patient\search.html:150:            </a>
+  app\templates\patient\search.html:151:        </li>
+  app\templates\patient\search.html:152:    </ul>
+  app\templates\patient\search.html:153:</nav>
+  app\templates\patient\search.html:154:{% endif %}
+  app\templates\patient\search.html:155:{% endblock %}
+  app\templates\patient\search.html:156:
+  app\templates\patient\search.html:157:{% block extra_js %}
+  app\templates\patient\search.html:158:<script>
+  app\templates\patient\search.html:159:    // Handle Show Inactive toggle change
+  app\templates\patient\search.html:160:    const toggleSwitch = document.getElementById('toggleInactive');
+> app\templates\patient\search_widget.html:1:<form method="GET" action="{{ url_for('main.search_patients') 
+}}" class="w-100">
+  app\templates\patient\search_widget.html:2:    <div class="input-group shadow-sm">
+  app\templates\patient\search_widget.html:3:        <span class="input-group-text bg-white border-end-0 
+text-muted"><i class="bi bi-search"></i></span>
+  app\templates\patient\search_widget.html:4:        <input type="text" name="query" class="form-control 
+border-start-0 ps-0" placeholder="Search by MRN, name, phone, or DOB (YYYY-MM-DD)..." value="{{ 
+request.args.get('query', '') }}">
+  app\templates\patient\search_widget.html:5:        <button class="btn btn-primary px-4 fw-medium" 
+type="submit">Search</button>
+  app\templates\patient\search_widget.html:6:    </div>
+  app\templates\patient\search_widget.html:7:</form>
+  app\templates\reports\print.html:1:<!DOCTYPE html>
+  app\templates\reports\print.html:2:<html lang="en">
+  app\templates\reports\print.html:3:<head>
+  app\templates\reports\print.html:4:    <meta charset="UTF-8">
+> app\templates\reports\print.html:5:    <meta name="viewport" content="width=device-width, 
+initial-scale=1.0">
+  app\templates\reports\print.html:6:    <title>Print Report - EHR Clinical Portal</title>
+  app\templates\reports\print.html:7:    <!-- Bootstrap 5 CSS -->
+  app\templates\reports\print.html:8:    <link 
+href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  app\templates\reports\print.html:9:    <!-- Google Font (Inter) -->
+  app\templates\reports\print.html:10:    <link 
+href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  app\templates\reports\print.html:11:    <style>
+  app\templates\reports\print.html:12:        body {
+  app\templates\reports\print.html:13:            font-family: 'Inter', sans-serif;
+  app\templates\reports\print.html:14:            background-color: #ffffff;
+  app\templates\reports\print.html:15:            color: #000000;
+  app\templates\reports\print.html:16:            padding: 2rem;
+  app\templates\reports\print.html:17:        }
+  app\templates\visit\create.html:12:            <div class="card-body py-3 d-flex align-items-center 
+justify-content-between flex-wrap gap-2">
+  app\templates\visit\create.html:13:                <div>
+  app\templates\visit\create.html:14:                    <h5 class="fw-bold text-dark mb-1"><i class="bi 
+bi-person-fill text-primary me-2"></i>{{ patient.full_name }}</h5>
+  app\templates\visit\create.html:15:                    <span class="text-muted small">MRN: <strong>{{ 
+patient.patient_number }}</strong> | Gender: <strong>{{ patient.gender }}</strong> | Age: <strong>{{ 
+patient.age }} years</strong></span>
+  app\templates\visit\create.html:16:                </div>
+> app\templates\visit\create.html:17:                <a href="{{ url_for('main.view_patient_profile', 
+patient_id=patient.id) }}" class="btn btn-outline-secondary btn-sm">
+  app\templates\visit\create.html:18:                    <i class="bi bi-chevron-left me-1"></i> Cancel & 
+Return
+  app\templates\visit\create.html:19:                </a>
+  app\templates\visit\create.html:20:            </div>
+  app\templates\visit\create.html:21:        </div>
+  app\templates\visit\create.html:22:
+> app\templates\visit\create.html:23:        <form action="{{ url_for('doctor.create_medical_visit', 
+patient_id=patient.id) }}" method="POST" class="needs-validation" novalidate>
+  app\templates\visit\create.html:24:            <div class="row g-4">
+  app\templates\visit\create.html:25:                
+  app\templates\visit\create.html:26:                <!-- Left Card: Clinical Encounter Data -->
+  app\templates\visit\create.html:27:                <div class="col-12 col-lg-7">
+  app\templates\visit\create.html:28:                    <div class="card shadow-sm border-0 h-100">
+  app\templates\visit\create.html:29:                        <div class="card-header bg-white py-3 border-0">
+  app\templates\visit\create.html:30:                            <h6 class="fw-bold m-0 text-secondary"><i 
+class="bi bi-file-earmark-medical-fill text-primary me-2"></i>Encounter Details</h6>
+  app\templates\visit\create.html:31:                        </div>
+  app\templates\visit\create.html:32:                        <div class="card-body">
+  app\templates\visit\create.html:33:                            
+  app\templates\visit\create.html:34:                            <!-- Symptoms -->
+  app\templates\visit\create.html:35:                            <div class="mb-3">
+  app\templates\visit\create.html:186:
+  app\templates\visit\create.html:187:            </div>
+  app\templates\visit\create.html:188:
+  app\templates\visit\create.html:189:            <!-- Form Submit bar -->
+  app\templates\visit\create.html:190:            <div class="d-flex justify-content-end gap-2 mt-4 
+border-top pt-3 mb-5">
+> app\templates\visit\create.html:191:                <a href="{{ url_for('main.view_patient_profile', 
+patient_id=patient.id) }}" class="btn btn-outline-secondary">Cancel & Go Back</a>
+  app\templates\visit\create.html:192:                <button type="submit" class="btn btn-success px-4">
+  app\templates\visit\create.html:193:                    <i class="bi bi-save2 me-1"></i> Save Consultation 
+Visit
+  app\templates\visit\create.html:194:                </button>
+  app\templates\visit\create.html:195:            </div>
+  app\templates\visit\create.html:196:        </form>
+  app\templates\visit\create.html:197:    </div>
+  app\templates\visit\create.html:198:</div>
+  app\templates\visit\create.html:199:{% endblock %}
+  app\templates\visit\create.html:200:
+  app\templates\visit\create.html:201:{% block extra_js %}
+  app\templates\visit\create.html:202:<script>
+  app\templates\visit\create.html:203:    // Dynamic Prescription Table row appender
+  app\templates\base.html:1:<!DOCTYPE html>
+  app\templates\base.html:2:<html lang="en">
+  app\templates\base.html:3:<head>
+  app\templates\base.html:4:    <meta charset="UTF-8">
+> app\templates\base.html:5:    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  app\templates\base.html:6:    <title>{% block title %}EHR Clinical Portal{% endblock %}</title>
+  app\templates\base.html:7:    <!-- Bootstrap 5 CSS -->
+  app\templates\base.html:8:    <link 
+href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  app\templates\base.html:9:    <!-- Bootstrap Icons -->
+  app\templates\base.html:10:    <link 
+href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  app\templates\base.html:11:    <!-- Google Font (Inter) -->
+  app\templates\base.html:12:    <link 
+href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  app\templates\base.html:13:    <!-- Custom Style CSS -->
+  app\templates\base.html:14:    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') 
+}}">
+  app\templates\base.html:15:    {% block extra_css %}{% endblock %}
+  app\templates\base.html:16:</head>
+  app\templates\base.html:17:<body>
+  app\templates\base.html:35:                        <i class="bi bi-speedometer2"></i> Dashboard
+  app\templates\base.html:36:                    </a>
+  app\templates\base.html:37:                    <a href="{{ url_for('admin.manage_users') }}" 
+class="nav-link {% if request.path == url_for('admin.manage_users') %}active{% endif %}">
+  app\templates\base.html:38:                        <i class="bi bi-people-fill"></i> Manage Users
+  app\templates\base.html:39:                    </a>
+> app\templates\base.html:40:                    <a href="{{ url_for('admin.view_audit_logs') }}" 
+class="nav-link {% if request.path == url_for('admin.view_audit_logs') %}active{% endif %}">
+  app\templates\base.html:41:                        <i class="bi bi-journal-text"></i> Audit Logs
+  app\templates\base.html:42:                    </a>
+> app\templates\base.html:43:                    <a href="{{ url_for('admin.view_reports') }}" 
+class="nav-link {% if request.path == url_for('admin.view_reports') %}active{% endif %}">
+  app\templates\base.html:44:                        <i class="bi bi-graph-up-arrow"></i> Reports
+  app\templates\base.html:45:                    </a>
+> app\templates\base.html:46:                    <a href="{{ url_for('admin.backup_download_view') }}" 
+class="nav-link {% if request.path == url_for('admin.backup_download_view') %}active{% endif %}">
+  app\templates\base.html:47:                        <i class="bi bi-database-down"></i> Backup Database
+  app\templates\base.html:48:                    </a>
+  app\templates\base.html:49:                
+  app\templates\base.html:50:                <!-- 2. Administrator Side Menu -->
+  app\templates\base.html:51:                {% elif role == 'Administrator' %}
+  app\templates\base.html:52:                    <a href="{{ url_for('admin.admin_dashboard') }}" 
+class="nav-link {% if request.path == url_for('admin.admin_dashboard') %}active{% endif %}">
+  app\templates\base.html:53:                        <i class="bi bi-speedometer2"></i> Dashboard
+  app\templates\base.html:54:                    </a>
+  app\templates\base.html:55:                    <a href="{{ url_for('admin.manage_doctors') }}" 
+class="nav-link {% if request.path == url_for('admin.manage_doctors') %}active{% endif %}">
+  app\templates\base.html:56:                        <i class="bi bi-heart-pulse"></i> Doctors List
+  app\templates\base.html:57:                    </a>
+  app\templates\base.html:58:                    <a href="{{ url_for('admin.manage_receptionists') }}" 
+class="nav-link {% if request.path == url_for('admin.manage_receptionists') %}active{% endif %}">
+  app\templates\base.html:62:                        <i class="bi bi-people"></i> Manage Patients
+  app\templates\base.html:63:                    </a>
+  app\templates\base.html:64:                    <a href="{{ url_for('admin.manage_appointments') }}" 
+class="nav-link {% if request.path == url_for('admin.manage_appointments') %}active{% endif %}">
+  app\templates\base.html:65:                        <i class="bi bi-calendar-event"></i> Appointments
+  app\templates\base.html:66:                    </a>
+> app\templates\base.html:67:                    <a href="{{ url_for('admin.view_reports') }}" 
+class="nav-link {% if request.path == url_for('admin.view_reports') %}active{% endif %}">
+  app\templates\base.html:68:                        <i class="bi bi-graph-up-arrow"></i> Reports
+  app\templates\base.html:69:                    </a>
+  app\templates\base.html:70:                
+  app\templates\base.html:71:                <!-- 3. Doctor Side Menu -->
+  app\templates\base.html:72:                {% elif role == 'Doctor' %}
+  app\templates\base.html:73:                    <a href="{{ url_for('doctor.doctor_dashboard') }}" 
+class="nav-link {% if request.path == url_for('doctor.doctor_dashboard') %}active{% endif %}">
+  app\templates\base.html:74:                        <i class="bi bi-speedometer2"></i> Dashboard
+  app\templates\base.html:75:                    </a>
+> app\templates\base.html:76:                    <a href="{{ url_for('doctor.search_patients') }}" 
+class="nav-link {% if request.path.startswith('/doctor/patient') %}active{% endif %}">
+  app\templates\base.html:77:                        <i class="bi bi-search"></i> Search Patients
+  app\templates\base.html:78:                    </a>
+  app\templates\base.html:79:                    
+  app\templates\base.html:80:                <!-- 4. Receptionist Side Menu -->
+  app\templates\base.html:81:                {% elif role == 'Receptionist' %}
+  app\templates\base.html:82:                    <a href="{{ url_for('receptionist.receptionist_dashboard') 
+}}" class="nav-link {% if request.path == url_for('receptionist.receptionist_dashboard') %}active{% endif %}">
+  app\templates\base.html:83:                        <i class="bi bi-speedometer2"></i> Dashboard
+  app\templates\base.html:84:                    </a>
+  app\templates\base.html:85:                    <a href="{{ url_for('receptionist.register_patient') }}" 
+class="nav-link {% if request.path == url_for('receptionist.register_patient') %}active{% endif %}">
+  app\templates\base.html:86:                        <i class="bi bi-person-plus-fill"></i> Register Patient
+  app\templates\base.html:87:                    </a>
+  app\templates\base.html:88:                    <a href="{{ url_for('receptionist.manage_appointments') }}" 
+class="nav-link {% if request.path == url_for('receptionist.manage_appointments') %}active{% endif %}">
+  app\__init__.py:14:    # Initialize extensions
+  app\__init__.py:15:    db.init_app(app)
+  app\__init__.py:16:    login_manager.init_app(app)
+  app\__init__.py:17:    
+  app\__init__.py:18:    # Configure authentication defaults
+> app\__init__.py:19:    login_manager.login_view = 'auth.login'
+  app\__init__.py:20:    login_manager.login_message_category = 'warning'
+  app\__init__.py:21:    
+  app\__init__.py:22:    # Ensure necessary folders exist
+  app\__init__.py:23:    db_uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
+  app\__init__.py:24:    if db_uri.startswith('sqlite:///'):
+  app\__init__.py:25:        db_path = db_uri.split('sqlite:///')[1]
+  app\__init__.py:26:        db_dir = os.path.dirname(db_path)
+  app\__init__.py:27:        os.makedirs(db_dir, exist_ok=True)
+  app\__init__.py:28:    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+  app\__init__.py:29:    
+  app\__init__.py:30:    # Register blueprints (these will be created in future modules)
+  app\__init__.py:31:    from app.routes.auth import auth_bp
+
+

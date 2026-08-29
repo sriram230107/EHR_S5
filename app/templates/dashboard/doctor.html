@@ -41,7 +41,7 @@
                                     {{ appt.reason }}
                                 </td>
                                 <td class="text-end">
-                                    <a href="{{ url_for('doctor.search_patients') }}?search={{ appt.patient.patient_number }}" class="btn btn-sm btn-primary">
+                                    <a href="{{ url_for('main.view_patient_profile', patient_id=appt.patient.id) }}" class="btn btn-sm btn-primary">
                                         <i class="bi bi-file-earmark-medical me-1"></i>Open File
                                     </a>
                                 </td>
