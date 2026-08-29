@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Government Scheme Eligibility - EHR Portal{% endblock %}
+
+{% block page_header %}Government Scheme Eligibility{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+
+```
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3 border-0">
+            <h6 class="fw-bold m-0 text-secondary">
+                <i class="bi bi-shield-check text-primary me-2"></i>
+                Government Scheme Eligibility
+            </h6>
+        </div>
+
+        <div class="card-body">
+
+            <div class="alert alert-info d-flex align-items-start">
+                <i class="bi bi-info-circle-fill me-2 mt-1"></i>
+                <div>
+                    <strong>Patient Scheme Check</strong>
+                    <p class="mb-0 mt-1">
+                        Eligibility is being checked using the patient's
+                        registered demographic and annual income information.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Patient Information -->
+            <div class="row g-3 mb-4">
+
+                <div class="col-12">
+                    <h6 class="fw-semibold text-primary border-bottom pb-2">
+                        Patient Information
+                    </h6>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label class="form-label text-muted">Patient Name</label>
+                    <div class="form-control bg-light">
+                        {{ patient.full_name }}
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label class="form-label text-muted">Patient Number</label>
+                    <div class="form-control bg-light">
+                        {{ patient.patient_number }}
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <label class="form-label text-muted">Date of Birth</label>
+                    <div class="form-control bg-light">
+                        {% if patient.dob %}
+                            {{ patient.dob.strftime('%d-%m-%Y') }}
+                        {% else %}
+                            Not provided
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <label class="form-label text-muted">Gender</label>
+                    <div class="form-control bg-light">
+                        {{ patient.gender or 'Not provided' }}
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <label class="form-label text-muted">Annual Income</label>
+                    <div class="form-control bg-light fw-semibold">
+                        {% if patient.annual_income is not none %}
+                            ₹ {{ "{:,.2f}".format(patient.annual_income|float) }}
+                        {% else %}
+                            Not provided
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Scheme Results -->
+            <div class="row g-3">
+
+                <div class="col-12">
+                    <h6 class="fw-semibold text-primary border-bottom pb-2">
+                        Eligible Government Schemes
+                    </h6>
+                </div>
+
+                {% if eligible_schemes %}
+
+                    {% for scheme in eligible_schemes %}
+
+                        <div class="col-12">
+                            <div class="card border-success shadow-sm">
+                                <div class="card-body">
+
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="fw-bold text-success mb-1">
+                                                <i class="bi bi-check-circle-fill me-2"></i>
+                                                {{ scheme.name }}
+                                            </h6>
+
+                                            {% if scheme.description %}
+                                                <p class="text-muted mb-2">
+                                                    {{ scheme.description }}
+                                                </p>
+                                            {% endif %}
+                                        </div>
+
+                                        <span class="badge bg-success">
+                                            Eligible
+                                        </span>
+                                    </div>
+
+                                    {% if scheme.max_income is not none %}
+                                        <small class="text-muted">
+                                            Income limit:
+                                            ₹ {{ "{:,.2f}".format(scheme.max_income|float) }}
+                                        </small>
+                                    {% endif %}
+
+                                </div>
+                            </div>
+                        </div>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="col-12">
+                        <div class="alert alert-warning mb-0">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            No currently available government schemes match
+                            this patient's eligibility criteria.
+                        </div>
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+            <!-- Actions -->
+            <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-4">
+
+                <a href="{{ url_for('main.view_patient_profile', patient_id=patient.id) }}"
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Back to Patient Profile
+                </a>
+
+                <a href="{{ url_for('main.edit_patient', patient_id=patient.id) }}"
+                   class="btn btn-outline-primary">
+                    <i class="bi bi-pencil-square me-1"></i>
+                    Update Income
+                </a>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+```
+
+</div>
+
+{% endblock %}

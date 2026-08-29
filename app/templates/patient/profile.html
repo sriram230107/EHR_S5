@@ -85,6 +85,34 @@
                     <div class="fw-semibold text-dark">{{ patient.emergency_contact_name }}</div>
                     <span class="small text-muted">{{ patient.emergency_contact_phone }}</span>
                 </div>
+
+                <hr class="text-muted opacity-25">
+
+<div class="mb-3">
+    <label class="text-muted small fw-semibold text-uppercase d-block mb-1">
+        Annual Household Income
+    </label>
+
+    {% if patient.annual_income is not none %}
+        <span class="fw-semibold text-dark">
+            ₹{{ "{:,.2f}".format(patient.annual_income|float) }}
+        </span>
+    {% else %}
+        <span class="text-muted">
+            Not provided
+        </span>
+    {% endif %}
+</div>
+
+{% if current_user.role.name in ['Receptionist', 'Administrator', 'Hospital System Administrator'] and patient.is_active %}
+<div class="d-grid mt-3">
+    <a href="{{ url_for('main.check_patient_schemes', patient_id=patient.id) }}"
+       class="btn btn-success btn-sm">
+        <i class="bi bi-shield-check me-1"></i>
+        Check Government Schemes
+    </a>
+</div>
+{% endif %}
                 
                 <!-- Action Buttons based on privileges -->
                 <div class="d-grid gap-2 mt-4">

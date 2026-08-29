@@ -4,6 +4,6 @@ __pycache__/
 instance/
 uploads/patients/
 .env
-.venv
+.venv/
 venv/
 *.log

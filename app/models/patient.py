@@ -18,6 +18,7 @@ class Patient(db.Model):
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    annual_income = db.Column(db.Numeric(12, 2), nullable=True)
     
     # Relationships
     appointments = db.relationship('Appointment', backref='patient', lazy=True)
