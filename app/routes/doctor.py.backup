@@ -11,8 +11,6 @@ from app import db
 from datetime import date, datetime
 import os
 import time
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 
 doctor_bp = Blueprint('doctor', __name__, url_prefix='/doctor')
 
@@ -125,6 +123,18 @@ def create_medical_visit(patient_id):
                 )
                 db.session.add(pres)
                 
+        # Auto-complete today's scheduled appointment for this patient and doctor
+        today_start = datetime.combine(date.today(), datetime.min.time())
+        today_end = datetime.combine(date.today(), datetime.max.time())
+        appt = Appointment.query.filter(
+            Appointment.patient_id == patient.id,
+            Appointment.doctor_id == current_user.id,
+            Appointment.status == 'Scheduled',
+            Appointment.appointment_date.between(today_start, today_end)
+        ).first()
+        if appt:
+            appt.status = 'Completed'
+
         db.session.commit()
         
         log_action(
@@ -156,46 +166,6 @@ def search_icd_codes():
         'code': item.code,
         'description': item.description
     } for item in results])
-
-@doctor_bp.route('/icd/assist')
-@login_required
-@role_required('Doctor')
-def assist_icd_codes():
-    """Return ML-ranked ICD-10 suggestions from the doctor's clinical text.
-
-    This is an assistive ranking system: the doctor must review and explicitly
-    select a suggested code before it is saved to the medical visit.
-    """
-    clinical_text = request.args.get('text', '').strip()
-    if len(clinical_text) < 3:
-        return jsonify({'suggestions': [], 'message': 'Enter at least a few clinical terms.'})
-
-    codes = ICDCode.query.all()
-    if not codes:
-        return jsonify({'suggestions': []})
-
-    documents = [f"{item.description} {item.keywords}" for item in codes]
-    vectorizer = TfidfVectorizer(stop_words='english', ngram_range=(1, 2))
-    matrix = vectorizer.fit_transform(documents)
-    query_vector = vectorizer.transform([clinical_text])
-    scores = cosine_similarity(query_vector, matrix).flatten()
-
-    ranked = sorted(zip(codes, scores), key=lambda pair: pair[1], reverse=True)[:5]
-    suggestions = []
-    for item, score in ranked:
-        # Keep the raw similarity for ranking, but present an easy-to-read percentage.
-        confidence = round(min(float(score) * 100, 99.0), 1)
-        if confidence <= 0:
-            continue
-        suggestions.append({
-            'id': item.id,
-            'code': item.code,
-            'description': item.description,
-            'match_score': confidence
-        })
-
-    return jsonify({'suggestions': suggestions})
-
 
 @doctor_bp.route('/patient/<int:patient_id>/upload', methods=['POST'])
 @login_required

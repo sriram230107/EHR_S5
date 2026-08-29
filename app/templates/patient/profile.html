@@ -170,8 +170,18 @@
                                                 <span class="text-muted small ms-2">by {{ visit.doctor.full_name }}</span>
                                             </div>
                                             {% if visit.icd_code %}
-                                                <span class="badge bg-primary">{{ visit.icd_code.code }}</span>
-                                            {% endif %}
+    <div class="mt-2">
+        <span class="text-muted small fw-semibold text-uppercase d-block">
+            ICD-10 Code
+        </span>
+        <span class="badge bg-primary fs-6 mt-1">
+            {{ visit.icd_code.code }}
+        </span>
+        <span class="ms-2 fw-semibold">
+            {{ visit.icd_code.description }}
+        </span>
+    </div>
+{% endif %}
                                         </div>
                                         <div class="card-body">
                                             <div class="row g-3 mb-3">

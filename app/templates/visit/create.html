@@ -7,140 +7,451 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-12 col-xl-11">
-        <!-- Patient Summary banner -->
+
+        <!-- Patient Summary -->
         <div class="card bg-white border-0 shadow-sm mb-4">
             <div class="card-body py-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div>
-                    <h5 class="fw-bold text-dark mb-1"><i class="bi bi-person-fill text-primary me-2"></i>{{ patient.full_name }}</h5>
-                    <span class="text-muted small">MRN: <strong>{{ patient.patient_number }}</strong> | Gender: <strong>{{ patient.gender }}</strong> | Age: <strong>{{ patient.age }} years</strong></span>
+                    <h5 class="fw-bold text-dark mb-1">
+                        <i class="bi bi-person-fill text-primary me-2"></i>
+                        {{ patient.full_name }}
+                    </h5>
+
+                    <span class="text-muted small">
+                        MRN: <strong>{{ patient.patient_number }}</strong>
+                        |
+                        Gender: <strong>{{ patient.gender }}</strong>
+                        |
+                        Age: <strong>{{ patient.age }} years</strong>
+                    </span>
                 </div>
-                <a href="{{ url_for('main.view_patient_profile', patient_id=patient.id) }}" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-chevron-left me-1"></i> Cancel & Return
+
+                <a href="{{ url_for('main.view_patient_profile', patient_id=patient.id) }}"
+                   class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-chevron-left me-1"></i>
+                    Cancel & Return
                 </a>
             </div>
         </div>
 
-        <form action="{{ url_for('doctor.create_medical_visit', patient_id=patient.id) }}" method="POST" class="needs-validation" novalidate>
+
+        <!-- Main Form -->
+        <form action="{{ url_for('doctor.create_medical_visit', patient_id=patient.id) }}"
+              method="POST"
+              class="needs-validation"
+              id="medical_visit_form"
+              novalidate>
+
             <div class="row g-4">
-                
-                <!-- Left Card: Clinical Encounter Data -->
+
+                <!-- =====================================================
+                     LEFT SIDE - CLINICAL ENCOUNTER
+                     ===================================================== -->
                 <div class="col-12 col-lg-7">
+
                     <div class="card shadow-sm border-0 h-100">
+
                         <div class="card-header bg-white py-3 border-0">
-                            <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-file-earmark-medical-fill text-primary me-2"></i>Encounter Details</h6>
+                            <h6 class="fw-bold m-0 text-secondary">
+                                <i class="bi bi-file-earmark-medical-fill text-primary me-2"></i>
+                                Encounter Details
+                            </h6>
                         </div>
+
                         <div class="card-body">
-                            
+
                             <!-- Symptoms -->
                             <div class="mb-3">
-                                <label for="symptoms" class="form-label fw-semibold">Symptoms / Chief Complaints <span class="text-danger">*</span></label>
-                                <textarea class="form-control" id="symptoms" name="symptoms" rows="3" placeholder="Describe symptoms reported by patient..." required></textarea>
-                                <div class="invalid-feedback">Chief complaints are required.</div>
+                                <label for="symptoms" class="form-label fw-semibold">
+                                    Symptoms / Chief Complaints
+                                    <span class="text-danger">*</span>
+                                </label>
+
+                                <textarea class="form-control"
+                                          id="symptoms"
+                                          name="symptoms"
+                                          rows="3"
+                                          placeholder="Describe symptoms reported by patient..."
+                                          required></textarea>
+
+                                <div class="invalid-feedback">
+                                    Chief complaints are required.
+                                </div>
                             </div>
-                            
-                            <!-- Vitals Grid -->
+
+
+                            <!-- Patient Vitals -->
                             <div class="row g-3 mb-4">
-                                <h6 class="fw-semibold text-primary border-bottom pb-2 mb-1">Patient Vitals</h6>
-                                
-                                <div class="col-6 col-sm-3">
-                                    <label for="vitals_bp" class="form-label small">Blood Pressure <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control form-control-sm" id="vitals_bp" name="vitals_bp" placeholder="e.g. 120/80" required>
-                                    <div class="invalid-feedback">BP (mmHg) is required.</div>
-                                </div>
-                                
-                                <div class="col-6 col-sm-3">
-                                    <label for="vitals_pulse" class="form-label small">Pulse Rate (BPM) <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control form-control-sm" id="vitals_pulse" name="vitals_pulse" min="30" max="250" placeholder="e.g. 72" required>
-                                    <div class="invalid-feedback">Enter pulse rate.</div>
+
+                                <div class="col-12">
+                                    <h6 class="fw-semibold text-primary border-bottom pb-2 mb-1">
+                                        Patient Vitals
+                                    </h6>
                                 </div>
 
+                                <!-- Blood Pressure -->
                                 <div class="col-6 col-sm-3">
-                                    <label for="vitals_temp" class="form-label small">Temperature (°F) <span class="text-danger">*</span></label>
-                                    <input type="number" step="0.1" class="form-control form-control-sm" id="vitals_temp" name="vitals_temp" min="90" max="115" placeholder="e.g. 98.6" required>
-                                    <div class="invalid-feedback">Enter temperature.</div>
+                                    <label for="vitals_bp" class="form-label small">
+                                        Blood Pressure
+                                        <span class="text-danger">*</span>
+                                    </label>
+
+                                    <input type="text"
+                                           class="form-control form-control-sm"
+                                           id="vitals_bp"
+                                           name="vitals_bp"
+                                           placeholder="120/80"
+                                           pattern="^\d{2,3}/\d{2,3}$"
+                                           required>
+
+                                    <div class="invalid-feedback">
+                                        Enter BP in format 120/80.
+                                    </div>
                                 </div>
 
+
+                                <!-- Pulse -->
                                 <div class="col-6 col-sm-3">
-                                    <label for="vitals_weight" class="form-label small">Weight (KG) <span class="text-danger">*</span></label>
-                                    <input type="number" step="0.1" class="form-control form-control-sm" id="vitals_weight" name="vitals_weight" min="1" max="300" placeholder="e.g. 68.5" required>
-                                    <div class="invalid-feedback">Enter weight.</div>
+                                    <label for="vitals_pulse" class="form-label small">
+                                        Pulse Rate (BPM)
+                                        <span class="text-danger">*</span>
+                                    </label>
+
+                                    <input type="number"
+                                           class="form-control form-control-sm"
+                                           id="vitals_pulse"
+                                           name="vitals_pulse"
+                                           min="30"
+                                           max="250"
+                                           placeholder="72"
+                                           required>
+
+                                    <div class="invalid-feedback">
+                                        Enter pulse rate between 30 and 250 BPM.
+                                    </div>
                                 </div>
+
+
+                                <!-- Temperature -->
+                                <div class="col-6 col-sm-3">
+                                    <label for="vitals_temp" class="form-label small">
+                                        Temperature (°F)
+                                        <span class="text-danger">*</span>
+                                    </label>
+
+                                    <input type="number"
+                                           step="0.1"
+                                           class="form-control form-control-sm"
+                                           id="vitals_temp"
+                                           name="vitals_temp"
+                                           min="90"
+                                           max="115"
+                                           placeholder="98.6"
+                                           required>
+
+                                    <div class="invalid-feedback">
+                                        Enter temperature between 90°F and 115°F.
+                                    </div>
+                                </div>
+
+
+                                <!-- Weight -->
+                                <div class="col-6 col-sm-3">
+                                    <label for="vitals_weight" class="form-label small">
+                                        Weight (KG)
+                                        <span class="text-danger">*</span>
+                                    </label>
+
+                                    <input type="number"
+                                           step="0.1"
+                                           class="form-control form-control-sm"
+                                           id="vitals_weight"
+                                           name="vitals_weight"
+                                           min="1"
+                                           max="300"
+                                           placeholder="68.5"
+                                           required>
+
+                                    <div class="invalid-feedback">
+                                        Enter weight between 1 and 300 KG.
+                                    </div>
+                                </div>
+
                             </div>
 
-                            <!-- Diagnosis Notes -->
+
+                            <!-- Diagnosis -->
                             <div class="mb-3">
-                                <label for="diagnosis_notes" class="form-label fw-semibold">Diagnosis Notes <span class="text-danger">*</span></label>
-                                <textarea class="form-control" id="diagnosis_notes" name="diagnosis_notes" rows="2" placeholder="Write initial clinical diagnosis notes..." required></textarea>
-                                <div class="invalid-feedback">Diagnosis notes are required.</div>
+                                <label for="diagnosis_notes" class="form-label fw-semibold">
+                                    Diagnosis Notes
+                                    <span class="text-danger">*</span>
+                                </label>
+
+                                <textarea class="form-control"
+                                          id="diagnosis_notes"
+                                          name="diagnosis_notes"
+                                          rows="2"
+                                          placeholder="Write initial clinical diagnosis notes..."
+                                          required></textarea>
+
+                                <div class="invalid-feedback">
+                                    Diagnosis notes are required.
+                                </div>
                             </div>
 
-                            <!-- Clinical/Progress Notes -->
+
+                            <!-- Clinical Notes -->
                             <div class="mb-3">
-                                <label for="clinical_notes" class="form-label fw-semibold">Clinical / Treatment Notes</label>
-                                <textarea class="form-control" id="clinical_notes" name="clinical_notes" rows="2" placeholder="Diet instructions, test advices, precautions..."></textarea>
+                                <label for="clinical_notes" class="form-label fw-semibold">
+                                    Clinical / Treatment Notes
+                                </label>
+
+                                <textarea class="form-control"
+                                          id="clinical_notes"
+                                          name="clinical_notes"
+                                          rows="2"
+                                          placeholder="Diet instructions, test advice, precautions..."></textarea>
                             </div>
 
-                            <!-- Follow-up date -->
-                            <div class="col-12 col-sm-6">
-                                <label for="follow_up_date" class="form-label fw-semibold">Suggested Follow-up Date</label>
-                                <input type="date" class="form-control" id="follow_up_date" name="follow_up_date">
+
+                            <!-- Follow-up -->
+                            <div class="mb-3 col-12 col-sm-6">
+                                <label for="follow_up_date" class="form-label fw-semibold">
+                                    Suggested Follow-up Date
+                                </label>
+
+                                <input type="date"
+                                       class="form-control"
+                                       id="follow_up_date"
+                                       name="follow_up_date">
                             </div>
 
                         </div>
                     </div>
                 </div>
 
-                <!-- Right Card: ICD-10 Search & Dynamic Medication Prescriptions -->
+
+                <!-- =====================================================
+                     RIGHT SIDE
+                     ===================================================== -->
                 <div class="col-12 col-lg-5">
+
                     <div class="row g-4">
-                        
-                        <!-- Block A: ICD-10 Auto-Assist -->
+
+                        <!-- =================================================
+                             ICD-10 CODING ASSISTANT
+                             ================================================= -->
                         <div class="col-12">
+
                             <div class="card shadow-sm border-0">
+
                                 <div class="card-header bg-white py-3 border-0">
-                                    <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-search text-primary me-2"></i>ICD-10 Coding Assistant</h6>
+                                    <h6 class="fw-bold m-0 text-secondary">
+                                        <i class="bi bi-search text-primary me-2"></i>
+                                        ICD-10 Coding Assistant
+                                    </h6>
                                 </div>
+
                                 <div class="card-body">
+
+                                    <div class="alert alert-light border small mb-3">
+                                        <i class="bi bi-robot text-primary me-1"></i>
+
+                                        <strong>AI/ML Assist:</strong>
+                                        analyzes the symptoms and diagnosis notes
+                                        to rank likely ICD-10 codes.
+
+                                        <br>
+
+                                        <span class="text-muted">
+                                            The doctor must review and confirm
+                                            the final ICD-10 code before saving.
+                                        </span>
+                                    </div>
+
+
+                                    <!-- AI Button -->
+                                    <button class="btn btn-primary btn-sm w-100 mb-3"
+                                            type="button"
+                                            id="ai_icd_btn">
+
+                                        <i class="bi bi-stars me-1"></i>
+                                        Suggest ICD Codes from Clinical Notes
+
+                                    </button>
+
+
+                                    <!-- AI Status -->
+                                    <div id="ai_icd_status"
+                                         class="small text-muted mb-2 d-none">
+                                    </div>
+
+
+                                    <!-- AI Suggestions -->
+                                    <div id="ai_icd_suggestions"
+                                         class="list-group shadow-sm mb-3 d-none"
+                                         style="max-height:220px; overflow-y:auto;">
+                                    </div>
+
+
+                                    <!-- Manual Search -->
+                                    <div class="text-muted small mb-2">
+                                        Or search the ICD-10 database manually:
+                                    </div>
+
+
                                     <div class="input-group input-group-sm mb-2">
-                                        <input type="text" id="icd_search_input" class="form-control" placeholder="Search ICD by keyword (e.g. fever, bp)...">
-                                        <button class="btn btn-primary" type="button" id="icd_search_btn">
+
+                                        <input type="text"
+                                               id="icd_search_input"
+                                               class="form-control"
+                                               placeholder="Search ICD by keyword (e.g. fever, hypertension)...">
+
+                                        <button class="btn btn-outline-primary"
+                                                type="button"
+                                                id="icd_search_btn">
+
                                             <i class="bi bi-search"></i>
+
                                         </button>
+
                                     </div>
-                                    <div id="icd_suggestions_list" class="list-group shadow-sm mt-1 d-none" style="max-height: 150px; overflow-y: auto;">
-                                        <!-- Javascript appends suggestions here -->
+
+
+                                    <!-- Manual Suggestions -->
+                                    <div id="icd_suggestions_list"
+                                         class="list-group shadow-sm mt-1 d-none"
+                                         style="max-height:150px; overflow-y:auto;">
                                     </div>
-                                    
-                                    <!-- Selection display -->
-                                    <div id="selected_icd_display" class="alert alert-info py-2 mt-2 d-none">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div>
-                                                <strong>Linked ICD-10:</strong> <span id="selected_icd_code_text"></span>
-                                                <div id="selected_icd_desc" class="small"></div>
+
+
+                                    <!-- Selected ICD Review -->
+                                    <div id="selected_icd_display"
+                                         class="alert alert-info py-3 mt-3 d-none">
+
+                                        <div class="mb-2">
+
+                                            <div class="small text-muted text-uppercase fw-semibold">
+                                                ICD-10 Code for Review
                                             </div>
-                                            <button type="button" class="btn-close" id="clear_icd_btn"></button>
+
+                                            <div class="fs-5 fw-bold">
+                                                <span id="selected_icd_code_text"></span>
+                                            </div>
+
+                                            <div id="selected_icd_desc"
+                                                 class="small mt-1">
+                                            </div>
+
                                         </div>
+
+
+                                        <!-- Confirmation Required -->
+                                        <div id="icd_confirmation_area">
+
+                                            <div class="small text-warning mb-2">
+                                                <i class="bi bi-exclamation-circle me-1"></i>
+                                                Please review this ICD-10 code
+                                                and confirm it as the doctor.
+                                            </div>
+
+                                            <button type="button"
+                                                    class="btn btn-success btn-sm"
+                                                    id="confirm_icd_btn">
+
+                                                <i class="bi bi-check-circle me-1"></i>
+                                                Confirm ICD Code
+
+                                            </button>
+
+                                            <button type="button"
+                                                    class="btn btn-outline-secondary btn-sm"
+                                                    id="change_icd_btn">
+
+                                                <i class="bi bi-arrow-repeat me-1"></i>
+                                                Choose Another
+
+                                            </button>
+
+                                        </div>
+
+
+                                        <!-- Confirmed -->
+                                        <div id="icd_confirmed_area"
+                                             class="d-none">
+
+                                            <div class="text-success fw-semibold mb-2">
+                                                <i class="bi bi-check-circle-fill me-1"></i>
+                                                Confirmed by Doctor
+                                            </div>
+
+                                            <button type="button"
+                                                    class="btn btn-outline-secondary btn-sm"
+                                                    id="change_confirmed_icd_btn">
+
+                                                <i class="bi bi-pencil me-1"></i>
+                                                Change Code
+
+                                            </button>
+
+                                        </div>
+
                                     </div>
-                                    
-                                    <!-- Hidden target input -->
-                                    <input type="hidden" name="icd_code_id" id="icd_code_id">
+
+
+                                    <!-- Hidden ICD ID -->
+                                    <input type="hidden"
+                                           name="icd_code_id"
+                                           id="icd_code_id"
+                                           value="">
+
+                                    <!-- Hidden confirmation state -->
+                                    <input type="hidden"
+                                           name="icd_confirmed"
+                                           id="icd_confirmed"
+                                           value="0">
+
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Block B: Prescriptions Drawer -->
+
+                        <!-- =================================================
+                             MEDICATIONS
+                             ================================================= -->
                         <div class="col-12">
+
                             <div class="card shadow-sm border-0">
+
                                 <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-0">
-                                    <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-capsule-therapeutic text-primary me-2"></i>Medications & Prescriptions</h6>
-                                    <button type="button" class="btn btn-outline-primary btn-sm" id="add_med_btn">
-                                        <i class="bi bi-plus-lg me-1"></i> Add Med
+
+                                    <h6 class="fw-bold m-0 text-secondary">
+                                        <i class="bi bi-capsule-therapeutic text-primary me-2"></i>
+                                        Medications & Prescriptions
+                                    </h6>
+
+                                    <button type="button"
+                                            class="btn btn-outline-primary btn-sm"
+                                            id="add_med_btn">
+
+                                        <i class="bi bi-plus-lg me-1"></i>
+                                        Add Med
+
                                     </button>
+
                                 </div>
+
+
                                 <div class="card-body p-0">
-                                    <div class="table-responsive p-0 shadow-none">
-                                        <table class="table table-hover align-middle mb-0" id="prescriptions_table" style="font-size: 0.85rem;">
+
+                                    <div class="table-responsive">
+
+                                        <table class="table table-hover align-middle mb-0"
+                                               id="prescriptions_table"
+                                               style="font-size:0.85rem;">
+
                                             <thead class="table-light">
+
                                                 <tr>
                                                     <th>Medication <span class="text-danger">*</span></th>
                                                     <th>Dose</th>
@@ -149,34 +460,74 @@
                                                     <th>Inst.</th>
                                                     <th></th>
                                                 </tr>
+
                                             </thead>
+
+
                                             <tbody id="prescriptions_tbody">
-                                                <!-- Row 1 (Initial row) -->
+
                                                 <tr class="prescription-row">
+
                                                     <td>
-                                                        <input type="text" name="medication_name[]" class="form-control form-control-sm" placeholder="Aspirin" required>
+                                                        <input type="text"
+                                                               name="medication_name[]"
+                                                               class="form-control form-control-sm"
+                                                               placeholder="Aspirin"
+                                                               required>
                                                     </td>
+
                                                     <td>
-                                                        <input type="text" name="dosage[]" class="form-control form-control-sm" placeholder="100mg" style="width: 60px;">
+                                                        <input type="text"
+                                                               name="dosage[]"
+                                                               class="form-control form-control-sm"
+                                                               placeholder="100mg"
+                                                               style="width:70px;">
                                                     </td>
+
                                                     <td>
-                                                        <input type="text" name="frequency[]" class="form-control form-control-sm" placeholder="QD" style="width: 60px;">
+                                                        <input type="text"
+                                                               name="frequency[]"
+                                                               class="form-control form-control-sm"
+                                                               placeholder="QD"
+                                                               style="width:65px;">
                                                     </td>
+
                                                     <td>
-                                                        <input type="text" name="duration[]" class="form-control form-control-sm" placeholder="7d" style="width: 50px;">
+                                                        <input type="text"
+                                                               name="duration[]"
+                                                               class="form-control form-control-sm"
+                                                               placeholder="7d"
+                                                               style="width:55px;">
                                                     </td>
+
                                                     <td>
-                                                        <input type="text" name="instructions[]" class="form-control form-control-sm" placeholder="After meals">
+                                                        <input type="text"
+                                                               name="instructions[]"
+                                                               class="form-control form-control-sm"
+                                                               placeholder="After meals">
                                                     </td>
+
                                                     <td class="text-end">
-                                                        <button type="button" class="btn btn-sm btn-outline-danger border-0 remove-row-btn" disabled>
+
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-outline-danger border-0 remove-row-btn"
+                                                                title="Remove medication"
+                                                                disabled>
+
                                                             <i class="bi bi-trash-fill"></i>
+
                                                         </button>
+
                                                     </td>
+
                                                 </tr>
+
                                             </tbody>
+
                                         </table>
+
                                     </div>
+
                                 </div>
                             </div>
                         </div>
@@ -186,197 +537,1348 @@
 
             </div>
 
-            <!-- Form Submit bar -->
+
+            <!-- =========================================================
+                 SUBMIT BAR
+                 ========================================================= -->
             <div class="d-flex justify-content-end gap-2 mt-4 border-top pt-3 mb-5">
-                <a href="{{ url_for('main.view_patient_profile', patient_id=patient.id) }}" class="btn btn-outline-secondary">Cancel & Go Back</a>
-                <button type="submit" class="btn btn-success px-4">
-                    <i class="bi bi-save2 me-1"></i> Save Consultation Visit
+
+                <a href="{{ url_for('main.view_patient_profile', patient_id=patient.id) }}"
+                   class="btn btn-outline-secondary">
+
+                    Cancel & Go Back
+
+                </a>
+
+                <button type="submit"
+                        class="btn btn-success px-4"
+                        id="save_visit_btn">
+
+                    <i class="bi bi-save2 me-1"></i>
+                    Save Consultation Visit
+
                 </button>
+
             </div>
+
         </form>
+
     </div>
 </div>
 {% endblock %}
 
+
 {% block extra_js %}
+
 <script>
-    // Dynamic Prescription Table row appender
-    document.addEventListener("DOMContentLoaded", function() {
-        const addMedBtn = document.getElementById("add_med_btn");
-        const tbody = document.getElementById("prescriptions_tbody");
-        
-        function updateRemoveButtons() {
-            const rows = tbody.querySelectorAll(".prescription-row");
-            rows.forEach((row, index) => {
-                const btn = row.querySelector(".remove-row-btn");
-                if (btn) {
-                    btn.disabled = rows.length === 1;
-                }
-            });
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    /* ================================================================
+       ELEMENT REFERENCES
+       ================================================================ */
+
+    const form = document.getElementById("medical_visit_form");
+
+    const addMedBtn = document.getElementById("add_med_btn");
+    const tbody = document.getElementById("prescriptions_tbody");
+
+    const aiBtn = document.getElementById("ai_icd_btn");
+    const aiSuggestions = document.getElementById("ai_icd_suggestions");
+    const aiStatus = document.getElementById("ai_icd_status");
+
+    const symptomsInput = document.getElementById("symptoms");
+    const diagnosisInput = document.getElementById("diagnosis_notes");
+    const clinicalNotesInput = document.getElementById("clinical_notes");
+
+    const icdSearchInput = document.getElementById("icd_search_input");
+    const icdSearchBtn = document.getElementById("icd_search_btn");
+    const icdSuggestionsList = document.getElementById("icd_suggestions_list");
+
+    const selectedIcdDisplay = document.getElementById("selected_icd_display");
+    const selectedIcdCodeText = document.getElementById("selected_icd_code_text");
+    const selectedIcdDesc = document.getElementById("selected_icd_desc");
+
+    const icdCodeIdInput = document.getElementById("icd_code_id");
+    const icdConfirmedInput = document.getElementById("icd_confirmed");
+
+    const confirmIcdBtn = document.getElementById("confirm_icd_btn");
+    const changeIcdBtn = document.getElementById("change_icd_btn");
+    const changeConfirmedIcdBtn =
+        document.getElementById("change_confirmed_icd_btn");
+
+    const icdConfirmationArea =
+        document.getElementById("icd_confirmation_area");
+
+    const icdConfirmedArea =
+        document.getElementById("icd_confirmed_area");
+
+    const saveVisitBtn =
+        document.getElementById("save_visit_btn");
+
+
+    /* ================================================================
+       BASIC SAFETY CHECK
+       ================================================================ */
+
+    if (!form) {
+        console.error("Medical visit form was not found.");
+        return;
+    }
+
+
+    /* ================================================================
+       ICD STATE
+       ================================================================ */
+
+    let pendingIcdId = "";
+    let pendingIcdCode = "";
+    let pendingIcdDescription = "";
+    let icdDoctorConfirmed = false;
+
+
+    /* ================================================================
+       HELPER - SAFE TEXT
+       ================================================================ */
+
+    function setText(element, value) {
+
+        if (element) {
+            element.textContent = value || "";
         }
-        
-        if (addMedBtn && tbody) {
-            addMedBtn.addEventListener("click", function() {
-                const newRow = document.createElement("tr");
-                newRow.className = "prescription-row";
-                newRow.innerHTML = `
-                    <td>
-                        <input type="text" name="medication_name[]" class="form-control form-control-sm" placeholder="Medication Name" required>
-                    </td>
-                    <td>
-                        <input type="text" name="dosage[]" class="form-control form-control-sm" placeholder="Dosage" style="width: 60px;">
-                    </td>
-                    <td>
-                        <input type="text" name="frequency[]" class="form-control form-control-sm" placeholder="Frequency" style="width: 60px;">
-                    </td>
-                    <td>
-                        <input type="text" name="duration[]" class="form-control form-control-sm" placeholder="Duration" style="width: 50px;">
-                    </td>
-                    <td>
-                        <input type="text" name="instructions[]" class="form-control form-control-sm" placeholder="Instructions">
-                    </td>
-                    <td class="text-end">
-                        <button type="button" class="btn btn-sm btn-outline-danger border-0 remove-row-btn">
-                            <i class="bi bi-trash-fill"></i>
-                        </button>
-                    </td>
-                `;
-                
+
+    }
+
+
+    /* ================================================================
+       PRESCRIPTION ROWS
+       ================================================================ */
+
+    function updateRemoveButtons() {
+
+        if (!tbody) {
+            return;
+        }
+
+        const rows =
+            tbody.querySelectorAll(".prescription-row");
+
+        rows.forEach(function (row) {
+
+            const btn =
+                row.querySelector(".remove-row-btn");
+
+            if (btn) {
+                btn.disabled = rows.length === 1;
+            }
+
+        });
+
+    }
+
+
+    function createMedicationRow() {
+
+        const newRow =
+            document.createElement("tr");
+
+        newRow.className =
+            "prescription-row";
+
+        newRow.innerHTML = `
+            <td>
+                <input type="text"
+                       name="medication_name[]"
+                       class="form-control form-control-sm"
+                       placeholder="Medication Name"
+                       required>
+            </td>
+
+            <td>
+                <input type="text"
+                       name="dosage[]"
+                       class="form-control form-control-sm"
+                       placeholder="Dosage"
+                       style="width:70px;">
+            </td>
+
+            <td>
+                <input type="text"
+                       name="frequency[]"
+                       class="form-control form-control-sm"
+                       placeholder="Frequency"
+                       style="width:65px;">
+            </td>
+
+            <td>
+                <input type="text"
+                       name="duration[]"
+                       class="form-control form-control-sm"
+                       placeholder="Duration"
+                       style="width:55px;">
+            </td>
+
+            <td>
+                <input type="text"
+                       name="instructions[]"
+                       class="form-control form-control-sm"
+                       placeholder="Instructions">
+            </td>
+
+            <td class="text-end">
+                <button type="button"
+                        class="btn btn-sm btn-outline-danger border-0 remove-row-btn"
+                        title="Remove medication">
+
+                    <i class="bi bi-trash-fill"></i>
+
+                </button>
+            </td>
+        `;
+
+        return newRow;
+
+    }
+
+
+    if (addMedBtn && tbody) {
+
+        addMedBtn.addEventListener(
+            "click",
+            function () {
+
+                const newRow =
+                    createMedicationRow();
+
                 tbody.appendChild(newRow);
+
                 updateRemoveButtons();
-            });
-            
-            // Event delegation for removing rows
-            tbody.addEventListener("click", function(e) {
-                const target = e.target.closest(".remove-row-btn");
-                if (target) {
-                    const row = target.closest(".prescription-row");
-                    if (row) {
-                        row.remove();
-                        updateRemoveButtons();
-                    }
+
+                const medicationInput =
+                    newRow.querySelector(
+                        'input[name="medication_name[]"]'
+                    );
+
+                if (medicationInput) {
+                    medicationInput.focus();
                 }
-            });
-            
-            // Initialize button statuses
-            updateRemoveButtons();
-        }
-    });
 
-    // Form Client-side validation logic
-    (() => {
-        'use strict'
-        const forms = document.querySelectorAll('.needs-validation')
-        Array.from(forms).forEach(form => {
-            form.addEventListener('submit', event => {
-                if (!form.checkValidity()) {
-                    event.preventDefault()
-                    event.stopPropagation()
+            }
+        );
+
+
+        tbody.addEventListener(
+            "click",
+            function (event) {
+
+                const removeButton =
+                    event.target.closest(".remove-row-btn");
+
+                if (!removeButton) {
+                    return;
                 }
-                form.classList.add('was-validated')
-            }, false)
-        })
-    })()
 
-    // ICD-10 Search Auto-Assist
-    document.addEventListener("DOMContentLoaded", function() {
-        const icdSearchInput = document.getElementById("icd_search_input");
-        const icdSearchBtn = document.getElementById("icd_search_btn");
-        const icdSuggestionsList = document.getElementById("icd_suggestions_list");
-        const selectedIcdDisplay = document.getElementById("selected_icd_display");
-        const selectedIcdCodeText = document.getElementById("selected_icd_code_text");
-        const selectedIcdDesc = document.getElementById("selected_icd_desc");
-        const icdCodeIdInput = document.getElementById("icd_code_id");
-        const clearIcdBtn = document.getElementById("clear_icd_btn");
+                const row =
+                    removeButton.closest(".prescription-row");
 
-        function performIcdSearch() {
-            const query = icdSearchInput.value.trim();
-            if (query.length < 2) {
-                icdSuggestionsList.classList.add("d-none");
+                if (!row) {
+                    return;
+                }
+
+                const rows =
+                    tbody.querySelectorAll(".prescription-row");
+
+                if (rows.length > 1) {
+
+                    row.remove();
+
+                    updateRemoveButtons();
+
+                }
+
+            }
+        );
+
+
+        updateRemoveButtons();
+
+    }
+
+
+    /* ================================================================
+       SELECT ICD CODE
+       ================================================================ */
+
+    window.selectIcdCode =
+        function (id, code, description) {
+
+            if (!id) {
+                alert("Invalid ICD-10 code selected.");
                 return;
             }
 
-            fetch("{{ url_for('doctor.search_icd_codes') }}?q=" + encodeURIComponent(query))
-                .then(response => response.json())
-                .then(data => {
-                    icdSuggestionsList.innerHTML = "";
-                    if (data.length === 0) {
-                        const noResult = document.createElement("div");
-                        noResult.className = "list-group-item text-muted small text-center";
-                        noResult.innerText = "No matching ICD codes found";
-                        icdSuggestionsList.appendChild(noResult);
-                    } else {
-                        data.forEach(item => {
-                            const btn = document.createElement("button");
-                            btn.type = "button";
-                            btn.className = "list-group-item list-group-item-action text-start small py-2";
-                            btn.innerHTML = `<strong>${item.code}</strong> - ${item.description}`;
-                            btn.addEventListener("click", function() {
-                                selectIcdCode(item.id, item.code, item.description);
-                            });
-                            icdSuggestionsList.appendChild(btn);
-                        });
-                    }
-                    icdSuggestionsList.classList.remove("d-none");
-                })
-                .catch(err => {
-                    console.error("Error fetching ICD codes:", err);
-                });
-        }
+            pendingIcdId =
+                String(id);
 
-        function selectIcdCode(id, code, description) {
-            icdCodeIdInput.value = id;
-            selectedIcdCodeText.innerText = code;
-            selectedIcdDesc.innerText = description;
-            selectedIcdDisplay.classList.remove("d-none");
-            icdSuggestionsList.classList.add("d-none");
-            icdSearchInput.value = "";
-            icdSearchInput.disabled = true;
-            icdSearchBtn.disabled = true;
-        }
+            pendingIcdCode =
+                code || "";
 
-        function clearIcdSelection() {
-            icdCodeIdInput.value = "";
-            selectedIcdDisplay.classList.add("d-none");
-            icdSearchInput.disabled = false;
-            icdSearchBtn.disabled = false;
-            icdSearchInput.focus();
-        }
+            pendingIcdDescription =
+                description || "";
 
-        if (icdSearchInput && icdSearchBtn) {
-            icdSearchBtn.addEventListener("click", performIcdSearch);
-            
-            // Trigger search as doctor types
-            let searchTimeout = null;
-            icdSearchInput.addEventListener("input", function() {
-                clearTimeout(searchTimeout);
-                const query = icdSearchInput.value.trim();
-                if (query.length >= 2) {
-                    searchTimeout = setTimeout(performIcdSearch, 300);
-                } else {
-                    icdSuggestionsList.classList.add("d-none");
-                }
-            });
+            icdDoctorConfirmed =
+                false;
 
-            // Prevent Enter key on search input from submitting the main form, perform search instead
-            icdSearchInput.addEventListener("keydown", function(e) {
-                if (e.key === "Enter") {
-                    e.preventDefault();
-                    performIcdSearch();
-                }
-            });
-        }
 
-        if (clearIcdBtn) {
-            clearIcdBtn.addEventListener("click", clearIcdSelection);
-        }
+            /* Clear previous confirmation */
+            if (icdCodeIdInput) {
+                icdCodeIdInput.value = "";
+            }
 
-        // Close suggestions when clicking outside
-        document.addEventListener("click", function(e) {
-            if (icdSuggestionsList && !icdSuggestionsList.contains(e.target) && e.target !== icdSearchInput && e.target !== icdSearchBtn) {
+            if (icdConfirmedInput) {
+                icdConfirmedInput.value = "0";
+            }
+
+
+            /* Display selected ICD */
+            setText(
+                selectedIcdCodeText,
+                pendingIcdCode
+            );
+
+            setText(
+                selectedIcdDesc,
+                pendingIcdDescription
+            );
+
+
+            if (selectedIcdDisplay) {
+
+                selectedIcdDisplay.classList.remove(
+                    "d-none",
+                    "alert-success"
+                );
+
+                selectedIcdDisplay.classList.add(
+                    "alert-info"
+                );
+
+            }
+
+
+            /* Show confirmation area */
+            if (icdConfirmationArea) {
+                icdConfirmationArea.classList.remove("d-none");
+            }
+
+            if (icdConfirmedArea) {
+                icdConfirmedArea.classList.add("d-none");
+            }
+
+
+            /* Hide suggestions */
+            if (icdSuggestionsList) {
                 icdSuggestionsList.classList.add("d-none");
             }
-        });
-    });
+
+            if (aiSuggestions) {
+                aiSuggestions.classList.add("d-none");
+            }
+
+
+            /* Lock manual search while reviewing */
+            if (icdSearchInput) {
+
+                icdSearchInput.value = "";
+                icdSearchInput.disabled = true;
+
+            }
+
+            if (icdSearchBtn) {
+                icdSearchBtn.disabled = true;
+            }
+
+        };
+
+
+    /* ================================================================
+       CONFIRM ICD CODE
+       ================================================================ */
+
+    if (confirmIcdBtn) {
+
+        confirmIcdBtn.addEventListener(
+            "click",
+            function () {
+
+                if (!pendingIcdId) {
+
+                    alert(
+                        "Please select an ICD-10 code first."
+                    );
+
+                    return;
+                }
+
+
+                /* Save selected ICD ID */
+                if (icdCodeIdInput) {
+                    icdCodeIdInput.value =
+                        pendingIcdId;
+                }
+
+
+                /* Mark doctor confirmation */
+                if (icdConfirmedInput) {
+                    icdConfirmedInput.value =
+                        "1";
+                }
+
+                icdDoctorConfirmed =
+                    true;
+
+
+                /* Update UI */
+                if (icdConfirmationArea) {
+                    icdConfirmationArea.classList.add(
+                        "d-none"
+                    );
+                }
+
+                if (icdConfirmedArea) {
+                    icdConfirmedArea.classList.remove(
+                        "d-none"
+                    );
+                }
+
+                if (selectedIcdDisplay) {
+
+                    selectedIcdDisplay.classList.remove(
+                        "alert-info"
+                    );
+
+                    selectedIcdDisplay.classList.add(
+                        "alert-success"
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* ================================================================
+       CHANGE ICD CODE
+       ================================================================ */
+
+    function changeIcdCode() {
+
+        pendingIcdId = "";
+        pendingIcdCode = "";
+        pendingIcdDescription = "";
+
+        icdDoctorConfirmed =
+            false;
+
+
+        /* Clear hidden values */
+        if (icdCodeIdInput) {
+            icdCodeIdInput.value = "";
+        }
+
+        if (icdConfirmedInput) {
+            icdConfirmedInput.value = "0";
+        }
+
+
+        /* Hide selected ICD */
+        if (selectedIcdDisplay) {
+            selectedIcdDisplay.classList.add("d-none");
+        }
+
+
+        /* Reset confirmation areas */
+        if (icdConfirmationArea) {
+            icdConfirmationArea.classList.remove("d-none");
+        }
+
+        if (icdConfirmedArea) {
+            icdConfirmedArea.classList.add("d-none");
+        }
+
+
+        /* Enable search */
+        if (icdSearchInput) {
+
+            icdSearchInput.disabled = false;
+            icdSearchInput.value = "";
+            icdSearchInput.focus();
+
+        }
+
+        if (icdSearchBtn) {
+            icdSearchBtn.disabled = false;
+        }
+
+    }
+
+
+    if (changeIcdBtn) {
+        changeIcdBtn.addEventListener(
+            "click",
+            changeIcdCode
+        );
+    }
+
+
+    if (changeConfirmedIcdBtn) {
+        changeConfirmedIcdBtn.addEventListener(
+            "click",
+            changeIcdCode
+        );
+    }
+
+
+    /* ================================================================
+       MANUAL ICD SEARCH
+       ================================================================ */
+
+    async function performIcdSearch() {
+
+        if (!icdSearchInput || !icdSuggestionsList) {
+            return;
+        }
+
+        const query =
+            icdSearchInput.value.trim();
+
+
+        if (query.length < 2) {
+
+            icdSuggestionsList.classList.add(
+                "d-none"
+            );
+
+            return;
+
+        }
+
+
+        icdSuggestionsList.innerHTML = `
+            <div class="list-group-item text-muted small">
+                <span class="spinner-border spinner-border-sm me-2"></span>
+                Searching ICD-10 codes...
+            </div>
+        `;
+
+        icdSuggestionsList.classList.remove(
+            "d-none"
+        );
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "{{ url_for('doctor.search_icd_codes') }}?q="
+                    + encodeURIComponent(query),
+                    {
+                        method: "GET",
+                        headers: {
+                            "Accept": "application/json"
+                        }
+                    }
+                );
+
+
+            if (!response.ok) {
+                throw new Error(
+                    "ICD search request failed"
+                );
+            }
+
+
+            const data =
+                await response.json();
+
+
+            icdSuggestionsList.innerHTML = "";
+
+
+            if (!Array.isArray(data) || data.length === 0) {
+
+                const noResult =
+                    document.createElement("div");
+
+                noResult.className =
+                    "list-group-item text-muted small text-center";
+
+                noResult.textContent =
+                    "No matching ICD codes found.";
+
+                icdSuggestionsList.appendChild(
+                    noResult
+                );
+
+            }
+
+            else {
+
+                data.forEach(
+                    function (item) {
+
+                        if (!item.id || !item.code) {
+                            return;
+                        }
+
+
+                        const button =
+                            document.createElement("button");
+
+                        button.type =
+                            "button";
+
+                        button.className =
+                            "list-group-item list-group-item-action text-start small py-2";
+
+
+                        const codeDiv =
+                            document.createElement("div");
+
+                        const codeStrong =
+                            document.createElement("strong");
+
+                        codeStrong.textContent =
+                            item.code;
+
+                        codeDiv.appendChild(
+                            codeStrong
+                        );
+
+
+                        const separator =
+                            document.createTextNode(
+                                " - "
+                            );
+
+                        codeDiv.appendChild(
+                            separator
+                        );
+
+
+                        const description =
+                            document.createTextNode(
+                                item.description || ""
+                            );
+
+                        codeDiv.appendChild(
+                            description
+                        );
+
+
+                        button.appendChild(
+                            codeDiv
+                        );
+
+
+                        button.addEventListener(
+                            "click",
+                            function () {
+
+                                window.selectIcdCode(
+                                    item.id,
+                                    item.code,
+                                    item.description || ""
+                                );
+
+                            }
+                        );
+
+
+                        icdSuggestionsList.appendChild(
+                            button
+                        );
+
+                    }
+                );
+
+
+                if (!icdSuggestionsList.children.length) {
+
+                    const noResult =
+                        document.createElement("div");
+
+                    noResult.className =
+                        "list-group-item text-muted small text-center";
+
+                    noResult.textContent =
+                        "No valid ICD codes found.";
+
+                    icdSuggestionsList.appendChild(
+                        noResult
+                    );
+
+                }
+
+            }
+
+
+            icdSuggestionsList.classList.remove(
+                "d-none"
+            );
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "ICD search error:",
+                error
+            );
+
+
+            icdSuggestionsList.innerHTML = `
+                <div class="list-group-item text-danger small">
+                    Unable to search ICD-10 codes. Please try again.
+                </div>
+            `;
+
+            icdSuggestionsList.classList.remove(
+                "d-none"
+            );
+
+        }
+
+    }
+
+
+    /* ================================================================
+       MANUAL SEARCH BUTTON
+       ================================================================ */
+
+    if (icdSearchBtn) {
+
+        icdSearchBtn.addEventListener(
+            "click",
+            performIcdSearch
+        );
+
+    }
+
+
+    /* ================================================================
+       SEARCH WHILE TYPING
+       ================================================================ */
+
+    let searchTimeout = null;
+
+
+    if (icdSearchInput) {
+
+        icdSearchInput.addEventListener(
+            "input",
+            function () {
+
+                clearTimeout(
+                    searchTimeout
+                );
+
+
+                const query =
+                    icdSearchInput.value.trim();
+
+
+                if (query.length >= 2) {
+
+                    searchTimeout =
+                        setTimeout(
+                            performIcdSearch,
+                            350
+                        );
+
+                }
+
+                else if (icdSuggestionsList) {
+
+                    icdSuggestionsList.classList.add(
+                        "d-none"
+                    );
+
+                }
+
+            }
+        );
+
+
+        /* ============================================================
+           ENTER KEY
+           ============================================================ */
+
+        icdSearchInput.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (event.key === "Enter") {
+
+                    event.preventDefault();
+
+                    performIcdSearch();
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* ================================================================
+       AI / ML ICD ASSIST
+       ================================================================ */
+
+    if (aiBtn) {
+
+        aiBtn.addEventListener(
+            "click",
+            async function () {
+
+                const clinicalText = [
+
+                    symptomsInput
+                        ? symptomsInput.value.trim()
+                        : "",
+
+                    diagnosisInput
+                        ? diagnosisInput.value.trim()
+                        : "",
+
+                    clinicalNotesInput
+                        ? clinicalNotesInput.value.trim()
+                        : ""
+
+                ]
+                .filter(Boolean)
+                .join(" ");
+
+
+                if (clinicalText.length < 3) {
+
+                    if (aiStatus) {
+
+                        aiStatus.textContent =
+                            "Enter symptoms or diagnosis notes first.";
+
+                        aiStatus.className =
+                            "small text-danger mb-2";
+
+                        aiStatus.classList.remove(
+                            "d-none"
+                        );
+
+                    }
+
+                    if (aiSuggestions) {
+                        aiSuggestions.classList.add(
+                            "d-none"
+                        );
+                    }
+
+                    return;
+
+                }
+
+
+                /* Loading state */
+                aiBtn.disabled =
+                    true;
+
+                aiBtn.innerHTML =
+                    '<span class="spinner-border spinner-border-sm me-1"></span>Analyzing...';
+
+
+                if (aiStatus) {
+
+                    aiStatus.textContent =
+                        "Ranking ICD-10 codes from the clinical description...";
+
+                    aiStatus.className =
+                        "small text-muted mb-2";
+
+                    aiStatus.classList.remove(
+                        "d-none"
+                    );
+
+                }
+
+
+                if (aiSuggestions) {
+                    aiSuggestions.classList.add(
+                        "d-none"
+                    );
+                }
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            "{{ url_for('doctor.assist_icd_codes') }}?text="
+                            + encodeURIComponent(clinicalText),
+                            {
+                                method: "GET",
+                                headers: {
+                                    "Accept": "application/json"
+                                }
+                            }
+                        );
+
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            "AI assist request failed"
+                        );
+
+                    }
+
+
+                    const data =
+                        await response.json();
+
+
+                    if (aiSuggestions) {
+                        aiSuggestions.innerHTML = "";
+                    }
+
+
+                    if (
+                        !data ||
+                        !Array.isArray(data.suggestions) ||
+                        data.suggestions.length === 0
+                    ) {
+
+                        if (aiStatus) {
+
+                            aiStatus.textContent =
+                                "No ICD-10 suggestions found. Try adding more clinical detail.";
+
+                            aiStatus.className =
+                                "small text-warning mb-2";
+
+                        }
+
+                        return;
+
+                    }
+
+
+                    data.suggestions.forEach(
+                        function (item, index) {
+
+                            if (!item.id || !item.code) {
+                                return;
+                            }
+
+
+                            const button =
+                                document.createElement("button");
+
+                            button.type =
+                                "button";
+
+                            button.className =
+                                "list-group-item list-group-item-action text-start py-2";
+
+
+                            const wrapper =
+                                document.createElement("div");
+
+                            wrapper.className =
+                                "d-flex justify-content-between align-items-start gap-2";
+
+
+                            const content =
+                                document.createElement("div");
+
+
+                            const codeLine =
+                                document.createElement("div");
+
+
+                            const strong =
+                                document.createElement("strong");
+
+                            strong.textContent =
+                                item.code;
+
+                            codeLine.appendChild(
+                                strong
+                            );
+
+
+                            codeLine.appendChild(
+                                document.createTextNode(
+                                    " - "
+                                )
+                            );
+
+
+                            codeLine.appendChild(
+                                document.createTextNode(
+                                    item.description || ""
+                                )
+                            );
+
+
+                            content.appendChild(
+                                codeLine
+                            );
+
+
+                            const score =
+                                Number(
+                                    item.match_score || 0
+                                );
+
+
+                            const badge =
+                                document.createElement("span");
+
+                            badge.className =
+                                "badge " +
+                                (
+                                    index === 0
+                                        ? "bg-primary"
+                                        : "bg-secondary"
+                                );
+
+                            badge.textContent =
+                                Math.round(score) + "% match";
+
+
+                            wrapper.appendChild(
+                                content
+                            );
+
+                            wrapper.appendChild(
+                                badge
+                            );
+
+
+                            button.appendChild(
+                                wrapper
+                            );
+
+
+                            const info =
+                                document.createElement("div");
+
+                            info.className =
+                                "small text-muted mt-1";
+
+                            info.textContent =
+                                "AI/ML similarity match — click to review.";
+
+                            button.appendChild(
+                                info
+                            );
+
+
+                            button.addEventListener(
+                                "click",
+                                function () {
+
+                                    window.selectIcdCode(
+                                        item.id,
+                                        item.code,
+                                        item.description || ""
+                                    );
+
+
+                                    if (aiStatus) {
+
+                                        aiStatus.textContent =
+                                            "ICD-10 suggestion selected. Review the code and confirm it as the doctor.";
+
+                                        aiStatus.className =
+                                            "small text-success mb-2";
+
+                                    }
+
+                                    if (aiSuggestions) {
+                                        aiSuggestions.classList.add(
+                                            "d-none"
+                                        );
+                                    }
+
+                                }
+                            );
+
+
+                            if (aiSuggestions) {
+
+                                aiSuggestions.appendChild(
+                                    button
+                                );
+
+                            }
+
+                        }
+                    );
+
+
+                    if (
+                        aiSuggestions &&
+                        aiSuggestions.children.length > 0
+                    ) {
+
+                        aiSuggestions.classList.remove(
+                            "d-none"
+                        );
+
+                    }
+
+
+                    if (aiStatus) {
+
+                        aiStatus.textContent =
+                            "Suggestions generated. Review and select the appropriate code.";
+
+                        aiStatus.className =
+                            "small text-success mb-2";
+
+                    }
+
+                }
+
+                catch (error) {
+
+                    console.error(
+                        "AI ICD assist error:",
+                        error
+                    );
+
+
+                    if (aiStatus) {
+
+                        aiStatus.textContent =
+                            "Unable to generate AI/ML suggestions. You can still use manual ICD search.";
+
+                        aiStatus.className =
+                            "small text-danger mb-2";
+
+                    }
+
+
+                    if (aiSuggestions) {
+
+                        aiSuggestions.classList.add(
+                            "d-none"
+                        );
+
+                    }
+
+                }
+
+                finally {
+
+                    aiBtn.disabled =
+                        false;
+
+                    aiBtn.innerHTML =
+                        '<i class="bi bi-stars me-1"></i> Suggest ICD Codes from Clinical Notes';
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* ================================================================
+       FORM VALIDATION + ICD CONFIRMATION
+       ================================================================ */
+
+    form.addEventListener(
+        "submit",
+        function (event) {
+
+            /* Bootstrap/browser validation */
+            if (!form.checkValidity()) {
+
+                event.preventDefault();
+                event.stopPropagation();
+
+                form.classList.add(
+                    "was-validated"
+                );
+
+                const firstInvalid =
+                    form.querySelector(
+                        ":invalid"
+                    );
+
+                if (firstInvalid) {
+                    firstInvalid.focus();
+                }
+
+                return;
+
+            }
+
+
+            /* ========================================================
+               ICD MUST BE SELECTED
+               ======================================================== */
+
+            if (
+                !pendingIcdId ||
+                !icdCodeIdInput ||
+                !icdCodeIdInput.value
+            ) {
+
+                event.preventDefault();
+                event.stopPropagation();
+
+
+                alert(
+                    "Please select an ICD-10 code and confirm it before saving the consultation."
+                );
+
+
+                if (icdSearchInput) {
+
+                    icdSearchInput.disabled =
+                        false;
+
+                    icdSearchInput.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center"
+                    });
+
+                    icdSearchInput.focus();
+
+                }
+
+                return;
+
+            }
+
+
+            /* ========================================================
+               ICD MUST BE DOCTOR CONFIRMED
+               ======================================================== */
+
+            if (
+                !icdDoctorConfirmed ||
+                !icdConfirmedInput ||
+                icdConfirmedInput.value !== "1"
+            ) {
+
+                event.preventDefault();
+                event.stopPropagation();
+
+
+                alert(
+                    "The selected ICD-10 code must be confirmed by the doctor before saving."
+                );
+
+
+                if (selectedIcdDisplay) {
+
+                    selectedIcdDisplay.classList.remove(
+                        "d-none"
+                    );
+
+                    selectedIcdDisplay.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center"
+                    });
+
+                }
+
+                return;
+
+            }
+
+
+            /* ========================================================
+               PREVENT DOUBLE SUBMISSION
+               ======================================================== */
+
+            if (saveVisitBtn) {
+
+                saveVisitBtn.disabled =
+                    true;
+
+                saveVisitBtn.innerHTML =
+                    '<span class="spinner-border spinner-border-sm me-1"></span>Saving Consultation...';
+
+            }
+
+
+            form.classList.add(
+                "was-validated"
+            );
+
+        },
+        false
+    );
+
+
+    /* ================================================================
+       CLOSE ICD SUGGESTIONS WHEN CLICKING OUTSIDE
+       ================================================================ */
+
+    document.addEventListener(
+        "click",
+        function (event) {
+
+            /* Manual ICD suggestions */
+            if (
+                icdSuggestionsList &&
+                !icdSuggestionsList.contains(event.target) &&
+                event.target !== icdSearchInput &&
+                event.target !== icdSearchBtn
+            ) {
+
+                icdSuggestionsList.classList.add(
+                    "d-none"
+                );
+
+            }
+
+
+            /* AI suggestions */
+            if (
+                aiSuggestions &&
+                !aiSuggestions.contains(event.target) &&
+                event.target !== aiBtn
+            ) {
+
+                if (
+                    !event.target.closest(
+                        "#ai_icd_suggestions"
+                    )
+                ) {
+
+                    aiSuggestions.classList.add(
+                        "d-none"
+                    );
+
+                }
+
+            }
+
+        }
+    );
+
+
+});
+
 </script>
+
 {% endblock %}
